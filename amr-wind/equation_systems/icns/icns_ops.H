@@ -44,9 +44,9 @@ struct FieldRegOp<ICNS, Scheme>
             {"u_mac", "v_mac", "w_mac"}, 1, Scheme::nghost_mac, 1);
 
         rho.template register_fill_patch_op<FieldFillPatchOps<FieldBCDirichlet>>(
-            repo.mesh(), time, probtype);
+            repo.mesh(), time);
         grad_p.template register_fill_patch_op<FieldFillPatchOps<FieldBCNoOp>>(
-            repo.mesh(), time, probtype);
+            repo.mesh(), time);
         pressure.template register_fill_patch_op<FieldFillConstScalar>(0.0);
 
         rho.fillpatch_on_regrid() = true;

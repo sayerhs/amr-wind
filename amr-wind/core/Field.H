@@ -271,9 +271,9 @@ public:
     /** Register a custom boundary conditions class
      */
     template<typename T, class... Args>
-    void register_custom_bc(Args&&... args)
+    void register_custom_bc(amrex::Orientation ori, Args&&... args)
     {
-        m_info->m_bc_func.emplace_back(new T(*this, std::forward<Args>(args)...));
+        m_info->m_bc_func[ori].reset(new T(*this, ori, std::forward<Args>(args)...));
     }
 
     void fillpatch(amrex::Real time) noexcept;
@@ -283,6 +283,11 @@ public:
     void fillphysbc(amrex::Real time, amrex::IntVect ng) noexcept;
 
     void apply_bc_funcs(const FieldState rho_state) noexcept;
+
+    void set_inflow(
+        const int lev,
+        const amrex::Real time,
+        amrex::MultiFab& mfab) noexcept;
 
     void fillpatch(
         int lev,

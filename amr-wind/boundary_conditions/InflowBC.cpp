@@ -1,13 +1,19 @@
-#include "amr-wind/boundary_conditions/FixedGradientBC.H"
+#include "amr-wind/boundary_conditions/InflowBC.H"
 #include "amr-wind/boundary_conditions/bc_utils.H"
+
+#include "AMReX_ParmParse.H"
 
 namespace amr_wind {
 
-FixedGradientBC::FixedGradientBC(Field& field, amrex::Orientation ori)
-    : m_field(field), m_ori(ori)
-{}
+ConstantInflow::ConstantInflow(Field& field) : m_field(field) {}
 
-void FixedGradientBC::apply_bc(const int lev, amrex::MultiFab& mfab, const amrex::Real)
+void ConstantInflow::init(amrex::Orientation ori, const std::string&)
+{
+    m_ori = ori;
+}
+
+void ConstantInflow::apply_bc(
+    const int lev, amrex::MultiFab& mfab, const amrex::Real)
 {
     const auto& repo = m_field.repo();
     const auto bcvals = m_field.bc_values_device();
@@ -32,7 +38,7 @@ void FixedGradientBC::apply_bc(const int lev, amrex::MultiFab& mfab, const amrex
             amrex::ParallelFor(
                 bc_utils::lower_boundary_faces(bx, idim),
                 [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-                    for (int n=0; n < ncomp; ++n)
+                    for (int n = 0; n < ncomp; ++n)
                         bc_a(i, j, k, n) = bcvals[idx][n];
                 });
         }
@@ -48,13 +54,36 @@ void FixedGradientBC::apply_bc(const int lev, amrex::MultiFab& mfab, const amrex
     }
 }
 
-void FixedGradientBC::operator()(Field& field, const FieldState)
+void ConstantInflow::operator()(Field& field, const FieldState)
 {
     const amrex::Real unused = 0.0;
     const int nlevels = field.repo().num_active_levels();
-    for (int lev=0; lev < nlevels; ++lev) {
+    for (int lev = 0; lev < nlevels; ++lev) {
         apply_bc(lev, field(lev), unused);
     }
+}
+
+InflowBC::InflowBC(
+    Field& field, amrex::Orientation ori, const std::string& pp_namespace)
+{
+    amrex::ParmParse pp(pp_namespace);
+    std::string itype("ConstantInflow");
+    const std::string key = field.name() + "/inflow_type";
+    pp.query(key.c_str(), itype);
+
+    m_bc_impl = InflowSpec::create(itype, field);
+    m_bc_impl->init(ori, pp_namespace);
+}
+
+void InflowBC::apply_bc(
+    const int lev, amrex::MultiFab& mfab, const amrex::Real time)
+{
+    m_bc_impl->apply_bc(lev, mfab, time);
+}
+
+void InflowBC::operator()(Field& field, const FieldState fstate)
+{
+    (*m_bc_impl)(field, fstate);
 }
 
 } // namespace amr_wind

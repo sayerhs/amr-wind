@@ -61,7 +61,10 @@ private:
 class ABLVelWallFunc : public FieldBCIface
 {
 public:
-    ABLVelWallFunc(Field& velocity, const ABLWallFunction& wall_func);
+    ABLVelWallFunc(Field& velocity, amrex::Orientation ori, const ABLWallFunction& wall_func);
+
+    virtual void apply_bc(
+        const int lev, amrex::MultiFab& mfab, const amrex::Real time) override;
 
     void operator()(Field& velocity, const FieldState rho_state) override;
 

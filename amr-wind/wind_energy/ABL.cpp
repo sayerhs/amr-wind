@@ -68,7 +68,11 @@ void ABL::post_init_actions()
     m_abl_wall_func.update_umean(m_pa);
 
     // Register ABL wall function for velocity
-    m_velocity.register_custom_bc<ABLVelWallFunc>(m_abl_wall_func);
+    for (amrex::OrientationIter oit; oit; ++oit) {
+        auto ori = oit();
+        if (m_velocity.bc_type()[ori] == BC::wall_model)
+            m_velocity.register_custom_bc<ABLVelWallFunc>(ori, m_abl_wall_func);
+    }
 }
 
 /** Perform tasks at the beginning of a new timestep

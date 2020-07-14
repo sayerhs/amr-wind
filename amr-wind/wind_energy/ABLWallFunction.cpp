@@ -63,9 +63,14 @@ void ABLWallFunction::update_umean(const FieldPlaneAveraging& pa)
 }
 
 ABLVelWallFunc::ABLVelWallFunc(
-    Field&, const ABLWallFunction& wall_func)
+    Field&, amrex::Orientation, const ABLWallFunction& wall_func)
     : m_wall_func(wall_func)
 {}
+
+void ABLVelWallFunc::apply_bc(const int, amrex::MultiFab&, const amrex::Real)
+{
+    amrex::Abort("ABLVelWallFunc::apply_bc not implemented");
+}
 
 void ABLVelWallFunc::operator()(Field& velocity, const FieldState rho_state)
 {

@@ -23,6 +23,7 @@ FieldInfo::FieldInfo(
     , m_bcrec(ncomp)
     , m_bcrec_d(ncomp)
     , m_states(FieldInfo::max_field_states, nullptr)
+    , m_bc_func(AMREX_SPACEDIM*2)
 {
     for (int i=0; i < AMREX_SPACEDIM*2; ++i)
         m_bc_type[i] = BC::undefined;
@@ -148,6 +149,22 @@ amrex::Vector<const amrex::MultiFab*> Field::vec_const_ptrs() const noexcept
     return ret;
 }
 
+void Field::set_inflow(
+    const int lev,
+    const amrex::Real time,
+    amrex::MultiFab& mfab) noexcept
+{
+    // Apply custom inflow
+    auto& fvec = m_info->m_bc_func;
+    for (amrex::OrientationIter oit; oit; ++oit) {
+        auto ori = oit();
+        if ((m_info->m_bc_type[ori] == BC::mass_inflow)
+            && (fvec[ori])) {
+            (*fvec[ori]).apply_bc(lev, mfab, time);
+        }
+    }
+}
+
 void Field::fillpatch(
     int lev,
     amrex::Real time,
@@ -160,6 +177,7 @@ void Field::fillpatch(
     auto& fop = *(m_info->m_fillpatch_op);
 
     fop.fillpatch(lev, time, mfab, nghost);
+    set_inflow(lev, time, mfab);
 }
 
 void Field::fillpatch_from_coarse(
@@ -174,6 +192,7 @@ void Field::fillpatch_from_coarse(
     auto& fop = *(m_info->m_fillpatch_op);
 
     fop.fillpatch_from_coarse(lev, time, mfab, nghost);
+    set_inflow(lev, time, mfab);
 }
 
 void Field::fillpatch(amrex::Real time, amrex::IntVect ng) noexcept
@@ -181,10 +200,9 @@ void Field::fillpatch(amrex::Real time, amrex::IntVect ng) noexcept
     BL_PROFILE("amr-wind::Field::fillpatch");
     BL_ASSERT(m_info->m_fillpatch_op);
     BL_ASSERT(m_info->bc_initialized() && m_info->m_bc_copied_to_device);
-    auto& fop = *(m_info->m_fillpatch_op);
     const int nlevels = m_repo.num_active_levels();
     for (int lev=0; lev < nlevels; ++lev) {
-        fop.fillpatch(lev, time, m_repo.get_multifab(m_id, lev), ng);
+        fillpatch(lev, time, m_repo.get_multifab(m_id, lev), ng);
     }
 }
 
@@ -213,8 +231,11 @@ void Field::fillphysbc(amrex::Real time) noexcept
 void Field::apply_bc_funcs(const FieldState rho_state) noexcept
 {
     BL_ASSERT(m_info->bc_initialized() && m_info->m_bc_copied_to_device);
-    for (auto& func: m_info->m_bc_func)
-        (*func)(*this, rho_state);
+    auto& fvec = m_info->m_bc_func;
+    for (amrex::OrientationIter oit; oit; ++oit) {
+        auto ori = oit();
+        if (fvec[ori]) (*fvec[ori])(*this, rho_state);
+    }
 }
 
 void Field::advance_states() noexcept
@@ -298,9 +319,8 @@ void Field::set_default_fillpatch_bc(
     }
 
     if (!m_info->m_fillpatch_op) {
-        const int probtype = 0;
         register_fill_patch_op<FieldFillPatchOps<FieldBCNoOp>>(
-            repo().mesh(), time, probtype);
+            repo().mesh(), time);
     }
 }
 

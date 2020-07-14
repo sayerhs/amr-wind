@@ -4,4 +4,6 @@ target_sources(${amr_wind_lib_name}
       incflo_set_velocity_bcs.cpp
       BCInterface.cpp
       FixedGradientBC.cpp
+      InflowBC.cpp
+      LinearInflow.cpp
    )

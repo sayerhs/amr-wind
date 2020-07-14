@@ -19,6 +19,9 @@ class FixedGradientBC : public FieldBCIface
 public:
     FixedGradientBC(Field& field, amrex::Orientation ori);
 
+    virtual void apply_bc(
+        const int lev, amrex::MultiFab& mfab, const amrex::Real time) override;
+
     void operator()(Field& field, const FieldState) override;
 
 private:

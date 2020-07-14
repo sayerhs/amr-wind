@@ -46,7 +46,7 @@ namespace pde {
  *  \tparam Scheme The numerical scheme (e.g., Godnuov, MOL)
  */
 template<typename PDE, typename Scheme>
-PDEFields create_fields_instance(const SimTime& time, FieldRepo& repo, const int probtype)
+PDEFields create_fields_instance(const SimTime& time, FieldRepo& repo, const int)
 {
     repo.declare_field(PDE::var_name(), PDE::ndim, Scheme::nghost_state, Scheme::num_states);
     repo.declare_field(pde_impl::mueff_name(PDE::var_name()), 1, 1, 1);
@@ -62,9 +62,9 @@ PDEFields create_fields_instance(const SimTime& time, FieldRepo& repo, const int
 
     PDEFields fields(repo, PDE::var_name());
     fields.field.register_fill_patch_op<FieldFillPatchOps<FieldBCDirichlet>>(
-        repo.mesh(), time, probtype);
+        repo.mesh(), time);
     fields.src_term.register_fill_patch_op<FieldFillPatchOps<FieldBCNoOp>>(
-        repo.mesh(), time, probtype, FieldInterpolator::PiecewiseConstant);
+        repo.mesh(), time, FieldInterpolator::PiecewiseConstant);
 
     fields.field.fillpatch_on_regrid() = true;
 

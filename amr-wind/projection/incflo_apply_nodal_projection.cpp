@@ -2,6 +2,8 @@
 #include "amr-wind/incflo.H"
 #include "amr-wind/core/MLMGOptions.H"
 #include "amr-wind/utilities/console_io.H"
+#include "amr-wind/projection/BoussinesqOutflow.H"
+#include "amr-wind/core/field_ops.H"
 
 using namespace amrex;
 
@@ -147,12 +149,27 @@ void incflo::ApplyProjection (Vector<MultiFab const*> density,
         }
     }
 
+    auto phif = m_repo.create_scratch_field(1, 1, amr_wind::FieldLoc::NODE);
+    if (incremental) {
+        for (int lev=0; lev <= finestLevel(); ++lev) {
+            (*phif)(lev).setVal(0.0);
+        }
+    } else {
+        amr_wind::field_ops::copy(*phif, pressure, 0, 0, 1, 0);
+    }
+    auto phi_in = phif->vec_ptrs();
+    if (!m_is_initial_proj && !incremental)
+    {
+        amr_wind::BoussinesqOutflow bout(m_repo);
+        bout(*phif, m_time.new_time());
+    }
+
     amr_wind::MLMGOptions options("nodal_proj");
     nodal_projector.reset(new NodalProjector(vel, GetVecOfConstPtrs(sigma),
                                              Geom(0,finest_level), LPInfo()));
     nodal_projector->setDomainBC(bclo, bchi);
     nodal_projector->setVerbose(options.verbose);
-    nodal_projector->project(options.rel_tol, options.abs_tol);
+    nodal_projector->project(phi_in, options.rel_tol, options.abs_tol);
     amr_wind::io::print_mlmg_info("Nodal_projection", nodal_projector->getMLMG());
 
     // Define "vel" to be U^{n+1} rather than (U^{n+1}-U^n)

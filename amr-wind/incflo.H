@@ -145,6 +145,7 @@ private:
 
     // Initial projection / iterations
     bool m_do_initial_proj    = true;
+    bool m_is_initial_proj = false;
     int  m_initial_iterations = 3;
 
     bool m_constant_density = true;

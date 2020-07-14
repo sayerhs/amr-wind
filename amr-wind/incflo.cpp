@@ -66,7 +66,9 @@ void incflo::InitData ()
         m_sim.post_manager().initialize();
 
         if (m_do_initial_proj) {
+            m_is_initial_proj = true;
             InitialProjection();
+            m_is_initial_proj = false;
         }
         if (m_initial_iterations > 0) {
             InitialIterations();

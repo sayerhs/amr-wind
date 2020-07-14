@@ -95,33 +95,50 @@ private:
     amrex::Real m_fill_val;
 };
 
+/** Create instance of a BC operator for use in fillpatch
+ *
+ *  \ingroup field_fillpatch
+ */
+template<typename Functor>
+struct BCOpCreator
+{
+    using BCFunctor = Functor;
+
+    Field& m_field;
+
+    BCOpCreator(Field& field) : m_field(field) {}
+
+    Functor operator()(const amrex::Real /* time */)
+    { return Functor{m_field.num_comp(), m_field.bc_values_device()}; }
+};
+
 /** Concrete implementation of filling patches and boundary conditions on
  *  multi-level AMR meshes.
  *
  *  \ingroup field_fillpatch
  */
-template <typename Functor>
+template <typename Functor, template <typename> class OpCreator = BCOpCreator>
 class FieldFillPatchOps : public FieldFillPatchOpsBase
 {
 public:
+    using BCOperator = BCOpCreator<Functor>;
+
     /**
      *  @param field Field whose patches are filled by this instance
      *  @param mesh  The mesh instance to determine amrex::Geometry at a level
      *  @param time  Time instance
-     *  @param probtype Unique identifier indicating problem (For BC operator)
      *  @param itype Interpolation type (default: conservative cell linear)
      */
     FieldFillPatchOps(
         Field& field,
         const amrex::AmrCore& mesh,
         const SimTime& time,
-        int probtype,
         FieldInterpolator itype = FieldInterpolator::CellConsLinear)
         : m_time(time)
         , m_mesh(mesh)
         , m_field(field)
-        , m_probtype(probtype)
         , m_mapper(field_impl::get_interpolation_operator(itype))
+        , m_bc_op(field)
     {}
 
     /** Utility function to get a vector of multifabs for over states
@@ -155,23 +172,17 @@ public:
     {
         if (lev == 0) {
             amrex::PhysBCFunct<amrex::GpuBndryFuncFab<Functor>> physbc(
-                m_mesh.Geom(lev), m_field.bcrec(),
-                Functor{m_probtype, m_field.num_comp(),
-                        m_field.bc_values_device()});
+                m_mesh.Geom(lev), m_field.bcrec(), m_bc_op(time));
 
             amrex::FillPatchSingleLevel(
                 mfab, nghost, time, {&m_field(lev)}, {time}, 0, 0,
                 m_field.num_comp(), m_mesh.Geom(lev), physbc, 0);
         } else {
             amrex::PhysBCFunct<amrex::GpuBndryFuncFab<Functor>> cphysbc(
-                m_mesh.Geom(lev - 1), m_field.bcrec(),
-                Functor{m_probtype, m_field.num_comp(),
-                        m_field.bc_values_device()});
+                m_mesh.Geom(lev - 1), m_field.bcrec(), m_bc_op(time));
 
             amrex::PhysBCFunct<amrex::GpuBndryFuncFab<Functor>> fphysbc(
-                m_mesh.Geom(lev), m_field.bcrec(),
-                Functor{m_probtype, m_field.num_comp(),
-                        m_field.bc_values_device()});
+                m_mesh.Geom(lev), m_field.bcrec(), m_bc_op(time));
 
             amrex::FillPatchTwoLevels(
                 mfab, nghost, time, {&m_field(lev - 1)}, {time},
@@ -194,9 +205,7 @@ public:
         auto mfab_vec_lev = get_mfab_vec(lev);
         if (lev == 0) {
             amrex::PhysBCFunct<amrex::GpuBndryFuncFab<Functor>> physbc(
-                m_mesh.Geom(lev), m_field.bcrec(),
-                Functor{m_probtype, m_field.num_comp(),
-                        m_field.bc_values_device()});
+                m_mesh.Geom(lev), m_field.bcrec(), m_bc_op(time));
 
             amrex::FillPatchSingleLevel(
                 mfab, nghost, time, mfab_vec_lev,
@@ -204,14 +213,10 @@ public:
                 m_field.num_comp(), m_mesh.Geom(lev), physbc, 0);
         } else {
             amrex::PhysBCFunct<amrex::GpuBndryFuncFab<Functor>> cphysbc(
-                m_mesh.Geom(lev - 1), m_field.bcrec(),
-                Functor{m_probtype, m_field.num_comp(),
-                        m_field.bc_values_device()});
+                m_mesh.Geom(lev - 1), m_field.bcrec(), m_bc_op(time));
 
             amrex::PhysBCFunct<amrex::GpuBndryFuncFab<Functor>> fphysbc(
-                m_mesh.Geom(lev), m_field.bcrec(),
-                Functor{m_probtype, m_field.num_comp(),
-                        m_field.bc_values_device()});
+                m_mesh.Geom(lev), m_field.bcrec(), m_bc_op(time));
 
             auto mfab_vec_levm1 = get_mfab_vec(lev - 1);
 
@@ -223,8 +228,8 @@ public:
                 cphysbc, 0, fphysbc, 0, m_mesh.refRatio(lev - 1), m_mapper,
                 m_field.bcrec(), 0);
         }
-        amrex::Print() << lev << " " << m_time.current_time()
-                       << " " << m_time.new_time() << std::endl;
+        amrex::Print() << lev << " " << m_time.current_time() << " "
+                       << m_time.new_time() << std::endl;
     }
 #endif
 
@@ -235,14 +240,10 @@ public:
         const amrex::IntVect& nghost) override
     {
         amrex::PhysBCFunct<amrex::GpuBndryFuncFab<Functor>> cphysbc(
-            m_mesh.Geom(lev - 1), m_field.bcrec(),
-            Functor{m_probtype, m_field.num_comp(),
-                    m_field.bc_values_device()});
+            m_mesh.Geom(lev - 1), m_field.bcrec(), m_bc_op(time));
 
         amrex::PhysBCFunct<amrex::GpuBndryFuncFab<Functor>> fphysbc(
-            m_mesh.Geom(lev), m_field.bcrec(),
-            Functor{m_probtype, m_field.num_comp(),
-                    m_field.bc_values_device()});
+            m_mesh.Geom(lev), m_field.bcrec(), m_bc_op(time));
 
         amrex::InterpFromCoarseLevel(
             mfab, nghost, time, m_field(lev - 1), 0, 0, m_field.num_comp(),
@@ -257,20 +258,22 @@ public:
         const amrex::IntVect& nghost) override
     {
         amrex::PhysBCFunct<amrex::GpuBndryFuncFab<Functor>> physbc(
-            m_mesh.Geom(lev), m_field.bcrec(),
-            Functor{m_probtype, m_field.num_comp(),
-                    m_field.bc_values_device()});
+            m_mesh.Geom(lev), m_field.bcrec(), m_bc_op(time));
         physbc.FillBoundary(mfab, 0, m_field.num_comp(), nghost, time, 0);
     }
+
+    //! Return instance of BC operator
+    BCOpCreator<Functor>& bc_operator();
 
 protected:
     const SimTime& m_time;
     const amrex::AmrCore& m_mesh;
     Field& m_field;
-    int m_probtype;
 
     //! Function that handles interpolation from coarse to fine level
     amrex::Interpolater* m_mapper;
+
+    BCOpCreator<Functor> m_bc_op;
 };
 
 } // namespace amr_wind
