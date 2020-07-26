@@ -69,7 +69,7 @@ void BoussinesqOutflow::init_data()
         const int jmin = box.smallEnd(1);
         const int jmax = box.bigEnd(1);
 
-        for (int j = jmin; j < jmax; j += nslices) {
+        for (int j = jmin; j <= jmax; j += nslices) {
             auto b = box;
             b.setSmall(1, j);
             b.setBig(1, std::min(j + nslices - 1, jmax));
@@ -84,7 +84,7 @@ void BoussinesqOutflow::init_data()
         const int jmin = box.smallEnd(1);
         const int jmax = box.bigEnd(1);
 
-        for (int j = jmin; j < jmax; j += nslices) {
+        for (int j = jmin; j <= jmax; j += nslices) {
             auto b = box;
             b.setSmall(1, j);
             b.setBig(1, std::min(j + nslices - 1, jmax));
@@ -99,7 +99,7 @@ void BoussinesqOutflow::init_data()
         const int jmin = box.smallEnd(0);
         const int jmax = box.bigEnd(0);
 
-        for (int j = jmin; j < jmax; j += nslices) {
+        for (int j = jmin; j <= jmax; j += nslices) {
             auto b = box;
             b.setSmall(0, j);
             b.setBig(0, std::min(j + nslices - 1, jmax));
@@ -114,7 +114,7 @@ void BoussinesqOutflow::init_data()
         const int jmin = box.smallEnd(0);
         const int jmax = box.bigEnd(0);
 
-        for (int j = jmin; j < jmax; j += nslices) {
+        for (int j = jmin; j <= jmax; j += nslices) {
             auto b = box;
             b.setSmall(0, j);
             b.setBig(0, std::min(j + nslices - 1, jmax));
@@ -183,9 +183,10 @@ void BoussinesqOutflow::operator()(ScratchField& phi, const amrex::Real time)
                 {
                     parr(i, j, kmax) = 0.0;
                     for (int k = kmax - 1; k >= kmin; --k) {
-                        amrex::Real tavg =
-                            0.25 * (tarr(i - 1, j - 1, k) + tarr(i, j - 1, k) +
-                                    tarr(i - 1, j, k) + tarr(i, j, k));
+                        // amrex::Real tavg =
+                        //     0.25 * (tarr(i - 1, j - 1, k) + tarr(i, j - 1, k) +
+                        //             tarr(i - 1, j, k) + tarr(i, j, k));
+                        amrex::Real tavg = tarr(i, j, k);
                         parr(i, j, k) = parr(i, j, k + 1) + fac * (tavg - T0);
                     }
                 }
