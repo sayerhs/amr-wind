@@ -133,19 +133,46 @@ void incflo::InitialProjection()
 {
     BL_PROFILE("amr-wind::incflo::InitialProjection()");
 
+    {
+        if (m_constant_density) {
+            density().advance_states();
+            density().state(amr_wind::FieldState::Old).fillpatch(m_time.current_time());
+        }
+
+        auto& vfields = icns().fields();
+        auto& vel = vfields.field;
+        vel.advance_states();
+        vel.state(amr_wind::FieldState::Old).fillpatch(m_time.current_time());
+        {
+            for (auto& eqn: scalar_eqns()) {
+                auto& field = eqn->fields().field;
+                field.advance_states();
+                field.state(amr_wind::FieldState::Old).fillpatch(m_time.current_time());
+            }
+        }
+
+        // Insurance
+        vfields.conv_term.setVal(0.0);
+        vfields.diff_term.setVal(0.0);
+        vfields.src_term.setVal(0.0);
+        icns().compute_source_term(amr_wind::FieldState::Old);
+        icns().compute_predictor_rhs(DiffusionType::Explicit);
+    }
+
     amrex::Print() << "Begin initial projection" << std::endl;
     if (m_verbose) {
         PrintMaxValues("before initial projection");
     }
 
-    Real dummy_dt = 1.0;
+
+    Real dummy_dt = m_time.deltaT();
     bool incremental = false;
     ApplyProjection(density().vec_const_ptrs(),
                     m_time.current_time(), dummy_dt, incremental);
 
     // We set p and gp back to zero (p0 may still be still non-zero)
-    pressure().setVal(0.0);
-    grad_p().setVal(0.0);
+    // pressure().setVal(0.0);
+    // grad_p().setVal(0.0);
 
     if (m_verbose) {
         PrintMaxValues("after initial projection");

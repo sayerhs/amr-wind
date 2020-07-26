@@ -158,7 +158,7 @@ void incflo::ApplyProjection (Vector<MultiFab const*> density,
         amr_wind::field_ops::copy(*phif, pressure, 0, 0, 1, 0);
     }
     auto phi_in = phif->vec_ptrs();
-    if (!m_is_initial_proj && !incremental)
+    if ( !incremental)
     {
         amr_wind::BoussinesqOutflow bout(m_repo);
         bout(*phif, m_time.new_time());
