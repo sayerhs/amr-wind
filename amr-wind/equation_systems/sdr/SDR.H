@@ -18,6 +18,24 @@ struct SDR : ScalarTransport
     static std::string var_name() { return "sdr"; }
 };
 
+template<>
+struct TurbulenceOp<SDR>
+{
+    TurbulenceOp(turbulence::TurbulenceModel& tmodel,
+                 PDEFields& fields)
+        : m_tmodel(tmodel), m_fields(fields)
+    {}
+
+    void operator()()
+    {
+        auto& mueff = m_fields.mueff;
+        m_tmodel.update_scalar_diff(mueff, "sdr");
+    }
+
+    turbulence::TurbulenceModel& m_tmodel;
+    PDEFields& m_fields;
+};
+
 } // namespace pde
 } // namespace amr_wind
 
