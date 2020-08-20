@@ -19,7 +19,8 @@ KOmegaSST<Transport>::KOmegaSST(CFDSim& sim)
       m_shear_prod(sim.repo().declare_field("shear_prod",1, 1, 1)),
       m_diss(sim.repo().declare_field("dissipation",1, 1, 1)),
       m_sdr_src(sim.repo().declare_field("omega_src",1,1,1)),
-      m_rho(sim.repo().get_field("density"))
+      m_rho(sim.repo().get_field("density")),
+      m_walldist(sim.repo().declare_field("wall_dist",1,1,1))
 {
     auto& tke_eqn = sim.pde_manager().register_transport_pde(pde::TKE::pde_name());
     m_tke = &(tke_eqn.fields().field);
@@ -124,7 +125,7 @@ void KOmegaSST<Transport>::update_turbulent_viscosity(
             const auto& gradOmega_arr = (*gradOmega)(lev).array(mfi);
             const auto& tke_arr = (*this->m_tke)(lev).array(mfi);
             const auto& sdr_arr = (*this->m_sdr)(lev).array(mfi);
-            const auto& wd_arr = (*this->m_walldist)(lev).array(mfi);            
+            const auto& wd_arr = (this->m_walldist)(lev).array(mfi);            
             const auto& shear_prod_arr = (this->m_shear_prod)(lev).array(mfi);
             const auto& diss_arr = (this->m_diss)(lev).array(mfi);
             const auto& sdr_src_arr = (this->m_sdr_src)(lev).array(mfi);
