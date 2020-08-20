@@ -9,16 +9,21 @@
 namespace amr_wind {
 namespace channel_flow {
 
-ChannelFlow::ChannelFlow(const CFDSim& sim)
+ChannelFlow::ChannelFlow(CFDSim& sim)
     : m_time(sim.time())
     , m_repo(sim.repo())
     , m_mesh(sim.mesh())
     , m_velocity(sim.repo().get_field("velocity"))
     , m_density(sim.repo().get_field("density"))
-    , m_tke(sim.repo().get_field("tke"))
-    , m_sdr(sim.repo().get_field("sdr"))
-    , m_walldist(sim.repo().get_field("wall_dist"))
+    , m_walldist(sim.repo().declare_field("wall_dist",1,1,1))
 {
+
+    auto& tke_eqn = sim.pde_manager().register_transport_pde("TKE");
+    m_tke = &(tke_eqn.fields().field);
+
+    auto& sdr_eqn = sim.pde_manager().register_transport_pde("SDR");
+    m_sdr = &(sdr_eqn.fields().field);
+    
     amrex::ParmParse pp("ChannelFlow");
     pp.query("normal_direction", m_norm_dir);
     
@@ -35,6 +40,8 @@ ChannelFlow::ChannelFlow(const CFDSim& sim)
     pp.query("tke0", m_tke0);
     pp.query("sdr0", m_sdr0);
 
+    amrex::Print() << "Density = " << m_rho << std::endl;
+
 }
 
 /** Initialize the velocity, density, tke and sdr fields at the beginning of the
@@ -49,7 +56,7 @@ void ChannelFlow::initialize_fields(
         initialize_fields(level, geom, YDir(), 1);
         break;
     case 2:
-        initialize_fields(level, geom, YDir(), 2);
+        initialize_fields(level, geom, ZDir(), 2);
         break;
     default:
         amrex::Abort("axis must be equal to 1 or 2");
@@ -63,14 +70,14 @@ void ChannelFlow::initialize_fields(
     const IndexSelector& idxOp,
     const int n_idx)
 {
-    using namespace utils;
 
     const amrex::Real kappa = m_kappa;
     const amrex::Real y_tau = m_ytau;
+    const amrex::Real utau = m_utau;
     auto& velocity = m_velocity(level);
     auto& density = m_density(level);
-    auto& tke = m_tke(level);
-    auto& sdr = m_sdr(level);
+    auto& tke = (*m_tke)(level);
+    auto& sdr = (*m_sdr)(level);
     auto& walldist = m_walldist(level);
     
     density.setVal(m_rho);
@@ -88,14 +95,14 @@ void ChannelFlow::initialize_fields(
         amrex::ParallelFor(
             vbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
                 const int n_ind = idxOp(i,j,k);
-                amrex::Real h = problo[n_idx] + (n_ind + 0.5);
-                if (h < 1.0)
-                    h = 1.0 - h;
+                amrex::Real h = problo[n_idx] + (n_ind + 0.5)*dx[n_idx];
+                if (h > 1.0)
+                    h = 2.0 - h;
                 wd(i,j,k) = h;
                 const amrex::Real hp = h/y_tau;
-                vel(i,j,k,0) = 1./kappa * std::log(1 + kappa * hp) + 7.8 * ( 1.0 - std::exp(-hp/11.0) - (hp/11.0) * std::exp(-hp/3.0) );
-                vel(i, j, k, 1) = 0.0;
-                vel(i, j, k, 2) = 0.0;
+                vel(i,j,k,0) = utau * (1./kappa * std::log(1 + kappa * hp) + 7.8 * ( 1.0 - std::exp(-hp/11.0) - (hp/11.0) * std::exp(-hp/3.0) ) );
+                vel(i,j,k,1) = 0.0;
+                vel(i,j,k,2) = 0.0;
             });
     }
 }

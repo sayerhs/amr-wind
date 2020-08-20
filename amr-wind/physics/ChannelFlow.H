@@ -16,7 +16,7 @@ class ChannelFlow : public Physics::Register<ChannelFlow>
 public:
     static const std::string identifier() { return "ChannelFlow"; }
 
-    ChannelFlow(const CFDSim& sim);
+    ChannelFlow(CFDSim& sim);
 
     virtual ~ChannelFlow() = default;
 
@@ -41,10 +41,9 @@ private:
     const amrex::AmrCore& m_mesh;
     Field& m_velocity;
     Field& m_density;
-    Field& m_tke;
-    Field& m_sdr;
+    Field* m_tke{nullptr};
+    Field* m_sdr{nullptr};
     Field& m_walldist;
-    void output_error();
 
     //! Wall normal directon - Default y direction
     int m_norm_dir{1};
