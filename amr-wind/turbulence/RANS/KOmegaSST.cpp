@@ -20,13 +20,15 @@ KOmegaSST<Transport>::KOmegaSST(CFDSim& sim)
       m_diss(sim.repo().declare_field("dissipation",1, 1, 1)),
       m_sdr_src(sim.repo().declare_field("omega_src",1,1,1)),
       m_rho(sim.repo().get_field("density")),
-      m_walldist(sim.repo().declare_field("wall_dist",1,1,1))
+      m_walldist(sim.repo().get_field("wall_dist"))
 {
-    auto& tke_eqn = sim.pde_manager().register_transport_pde(pde::TKE::pde_name());
-    m_tke = &(tke_eqn.fields().field);
+    //auto& tke_eqn = sim.pde_manager().register_transport_pde(pde::TKE::pde_name());
+    //m_tke = &(tke_eqn.fields().field);
+    m_tke = &(sim.repo().get_field("tke"));
     
-    auto& sdr_eqn = sim.pde_manager().register_transport_pde(pde::SDR::pde_name());
-    m_sdr = &(sdr_eqn.fields().field);
+    //auto& sdr_eqn = sim.pde_manager().register_transport_pde(pde::SDR::pde_name());
+    //m_sdr = &(sdr_eqn.fields().field);
+    m_sdr = &(sim.repo().get_field("sdr"));
    
     {
         const std::string coeffs_dict = this->model_name() + "_coeffs";
@@ -83,7 +85,15 @@ void KOmegaSST<Transport>::update_turbulent_viscosity(
         8. Calculate TKE dissipation term 
         9. Calculate SDR source terms - Needs alpha, beta, F1, gradK, gradOmega
         */
-        
+
+    amrex::Print() << "Calling update_turbulent_viscosity " << std::endl;
+
+    amrex::Print() << "Ghost cells for tke is " << m_tke->num_grow() << std::endl;
+    amrex::Print() << "Ghost cells for sdr is " << m_sdr->num_grow() << std::endl;
+    
+    m_tke->fillpatch(this->m_sim.time().current_time());
+    m_sdr->fillpatch(this->m_sim.time().current_time());
+    
     auto gradK = (this->m_sim.repo()).create_scratch_field(3,0);
     fvm::gradient(*gradK, m_tke->state(fstate) );
 
@@ -106,16 +116,9 @@ void KOmegaSST<Transport>::update_turbulent_viscosity(
     
     auto& den = this->m_rho.state(fstate);
     auto& repo = mu_turb.repo();
-    auto& geom_vec = repo.mesh().Geom();
 
     const int nlevels = repo.num_active_levels();
     for (int lev=0; lev < nlevels; ++lev) {
-        const auto& geom = geom_vec[lev];
-
-        const amrex::Real dx = geom.CellSize()[0];
-        const amrex::Real dy = geom.CellSize()[1];
-        const amrex::Real dz = geom.CellSize()[2];
-        const amrex::Real ds = std::cbrt(dx * dy * dz);
 
         for (amrex::MFIter mfi(mu_turb(lev)); mfi.isValid(); ++mfi) {
             const auto& bx = mfi.tilebox();
@@ -152,9 +155,11 @@ void KOmegaSST<Transport>::update_turbulent_viscosity(
                   amrex::Real beta = tmp_f1 * (beta1 - beta2) + beta2;
 
                   amrex::Real f2 = std::tanh(std::pow(std::max(2.0 * tmp2, tmp3),2));
-                  mu_arr(i, j, k) =
-                      rho_arr(i,j,k) * a1 * tke_arr(i,j,k) /
+                  mu_arr(i, j, k) = rho_arr(i,j,k) * a1 * tke_arr(i,j,k) /
                       std::max(a1 * sdr_arr(i,j,k), tmp4 * f2);
+                  if ( mu_arr(i,j,k) < 1e-6)
+                      std::cerr << "mu_turb = " << mu_arr(i,j,k) << ", shear_prod = " << tmp4
+                                << ", tke = " << tke_arr(i,j,k) << ", omega = " << sdr_arr(i,j,k) << std::endl;
 
                   f1_arr(i,j,k) = tmp_f1;
                   
@@ -171,6 +176,8 @@ void KOmegaSST<Transport>::update_turbulent_viscosity(
             });
         }
     }
+
+    mu_turb.fillpatch(this->m_sim.time().current_time());
     
 }
 
@@ -183,6 +190,8 @@ void KOmegaSST<Transport>::update_scalar_diff(
 
     const amrex::Real lam_mu = (this->m_transport).viscosity();
     auto& mu_turb = this->mu_turb();
+
+    amrex::Print() << " scalar diff name = " << name << std::endl;
     
     if (name == "tke") {
         const amrex::Real sigma_k1 = this->m_sigma_k1;
@@ -226,7 +235,8 @@ void KOmegaSST<Transport>::update_scalar_diff(
         }
         
     }
-    
+
+    deff.fillpatch(this->m_sim.time().current_time());    
 }
 
 
