@@ -62,10 +62,11 @@ protected:
     Field& m_diss;
     Field& m_sdr_src;
     Field& m_rho;
-
+    Field& m_walldist;
+    
     Field* m_tke;
     Field* m_sdr;
-    Field* m_walldist;
+
 
     //! Turbulence constants
     amrex::Real m_beta_star{0.09};
