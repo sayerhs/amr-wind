@@ -13,16 +13,7 @@ ChannelFlow::ChannelFlow(CFDSim& sim)
     : m_time(sim.time())
     , m_repo(sim.repo())
     , m_mesh(sim.mesh())
-    , m_velocity(sim.repo().get_field("velocity"))
-    , m_density(sim.repo().get_field("density"))
-    , m_walldist(sim.repo().declare_field("wall_dist",1,1,1))
 {
-
-    auto& tke_eqn = sim.pde_manager().register_transport_pde("TKE");
-    m_tke = &(tke_eqn.fields().field);
-
-    auto& sdr_eqn = sim.pde_manager().register_transport_pde("SDR");
-    m_sdr = &(sdr_eqn.fields().field);
     
     amrex::ParmParse pp("ChannelFlow");
     pp.query("normal_direction", m_norm_dir);
@@ -74,12 +65,12 @@ void ChannelFlow::initialize_fields(
     const amrex::Real kappa = m_kappa;
     const amrex::Real y_tau = m_ytau;
     const amrex::Real utau = m_utau;
-    auto& velocity = m_velocity(level);
-    auto& density = m_density(level);
-    auto& tke = (*m_tke)(level);
-    auto& sdr = (*m_sdr)(level);
-    auto& walldist = m_walldist(level);
-    
+    auto& velocity = m_repo.get_field("velocity")(level);
+    auto& density = m_repo.get_field("density")(level);
+    auto& tke = m_repo.get_field("tke")(level);
+    auto& sdr = m_repo.get_field("sdr")(level);
+    auto& walldist = m_repo.get_field("wall_dist")(level);
+
     density.setVal(m_rho);
     tke.setVal(m_tke0);
     sdr.setVal(m_sdr0);

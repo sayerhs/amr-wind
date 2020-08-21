@@ -39,11 +39,6 @@ private:
     const amr_wind::SimTime& m_time;
     const FieldRepo& m_repo;
     const amrex::AmrCore& m_mesh;
-    Field& m_velocity;
-    Field& m_density;
-    Field* m_tke{nullptr};
-    Field* m_sdr{nullptr};
-    Field& m_walldist;
 
     //! Wall normal directon - Default y direction
     int m_norm_dir{1};

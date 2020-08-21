@@ -46,14 +46,6 @@ void KOmegaSST<Transport>::update_turbulent_viscosity(
         8. Calculate TKE dissipation term 
         9. Calculate SDR source terms - Needs alpha, beta, F1, gradK, gradOmega
         */
-
-    amrex::Print() << "Calling update_turbulent_viscosity " << std::endl;
-
-    amrex::Print() << "Ghost cells for tke is " << m_tke->num_grow() << std::endl;
-    amrex::Print() << "Ghost cells for sdr is " << m_sdr->num_grow() << std::endl;
-    
-    m_tke->fillpatch(this->m_sim.time().current_time());
-    m_sdr->fillpatch(this->m_sim.time().current_time());
     
     auto gradK = (this->m_sim.repo()).create_scratch_field(3,0);
     fvm::gradient(*gradK, m_tke->state(fstate) );
@@ -152,8 +144,6 @@ void KOmegaSST<Transport>::update_scalar_diff(
     const amrex::Real lam_mu = (this->m_transport).viscosity();
     auto& mu_turb = this->mu_turb();
 
-    amrex::Print() << " scalar diff name = " << name << std::endl;
-    
     if (name == "tke") {
         const amrex::Real sigma_k1 = this->m_sigma_k1;
         const amrex::Real sigma_k2 = this->m_sigma_k2;
@@ -197,7 +187,6 @@ void KOmegaSST<Transport>::update_scalar_diff(
         
     }
 
-    deff.fillpatch(this->m_sim.time().current_time());    
 }
 
 
