@@ -19,15 +19,13 @@ KOmegaSST<Transport>::KOmegaSST(CFDSim& sim)
       m_diss(sim.repo().declare_field("dissipation",1, 1, 1)),
       m_sdr_src(sim.repo().declare_field("omega_src",1,1,1)),
       m_rho(sim.repo().get_field("density")),
-      m_walldist(sim.repo().get_field("wall_dist"))
+      m_walldist(sim.repo().declare_field("wall_dist",1,1,1))
 {
-    //auto& tke_eqn = sim.pde_manager().register_transport_pde(pde::TKE::pde_name());
-    //m_tke = &(tke_eqn.fields().field);
-    m_tke = &(sim.repo().get_field("tke"));
+    auto& tke_eqn = sim.pde_manager().register_transport_pde(pde::TKE::pde_name());
+    m_tke = &(tke_eqn.fields().field);
     
-    //auto& sdr_eqn = sim.pde_manager().register_transport_pde(pde::SDR::pde_name());
-    //m_sdr = &(sdr_eqn.fields().field);
-    m_sdr = &(sim.repo().get_field("sdr"));
+    auto& sdr_eqn = sim.pde_manager().register_transport_pde(pde::SDR::pde_name());
+    m_sdr = &(sdr_eqn.fields().field);
    
     {
         const std::string coeffs_dict = this->model_name() + "_coeffs";
