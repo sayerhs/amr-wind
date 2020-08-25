@@ -59,6 +59,8 @@ void KOmegaSST<Transport>::update_turbulent_viscosity(
     const amrex::Real a1 = this->m_a1;
     
     auto& den = this->m_rho.state(fstate);
+    auto& tke = (*this->m_tke).state(fstate);
+    auto& sdr = (*this->m_sdr).state(fstate);
     auto& repo = mu_turb.repo();
 
     const int nlevels = repo.num_active_levels();
@@ -69,23 +71,23 @@ void KOmegaSST<Transport>::update_turbulent_viscosity(
 
         for (amrex::MFIter mfi(mu_turb(lev)); mfi.isValid(); ++mfi) {
             const auto& bx = mfi.tilebox();
-            const auto& tke_arr = (*this->m_tke)(lev).array(mfi);
-            const auto& sdr_arr = (*this->m_sdr)(lev).array(mfi);
+            const auto& tke_arr = tke(lev).array(mfi);
+            const auto& sdr_arr = sdr(lev).array(mfi);
             const auto& rho_arr = den(lev).const_array(mfi);
             
             amrex::ParallelFor(
                 bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
 
-                  const amrex::Real tke = tke_arr(i,j,k);
-                  const amrex::Real sdr = sdr_arr(i,j,k);
+                  const amrex::Real tke_old = tke_arr(i,j,k);
+                  const amrex::Real sdr_old = sdr_arr(i,j,k);
                         
-                  if ( (tke < 0.0) && (sdr < 0.0) ) {
+                  if ( (tke_old < 0.0) && (sdr_old < 10.0) ) {
                       tke_arr(i,j,k) = 1e-8;
-                      sdr_arr(i,j,k) = rho_arr(i,j,k) * 1e-8 / (1000.0*lam_mu);
-                  } else if ( (tke < 0.0) ) {
-                      tke_arr(i,j,k) = 1000.0 * lam_mu * sdr / rho_arr(i,j,k);
-                  } else if ( (sdr < 0.0) ){
-                      sdr_arr(i,j,k) = rho_arr(i,j,k) * tke / (1000.0*lam_mu);
+                      sdr_arr(i,j,k) = rho_arr(i,j,k) * 1e-8 / (100.0*lam_mu);
+                  } else if ( (tke_old < 0.0) ) {
+                      tke_arr(i,j,k) = 100.0 * lam_mu * sdr_old / rho_arr(i,j,k);
+                  } else if ( (sdr_old < 10.0) ){
+                      sdr_arr(i,j,k) = rho_arr(i,j,k) * tke_old / (100.0*lam_mu);
                   }
             });
                 
@@ -94,14 +96,14 @@ void KOmegaSST<Transport>::update_turbulent_viscosity(
         }
     }
 
-    (this->m_tke)->fillpatch(this->m_sim.time().current_time());
-    (this->m_sdr)->fillpatch(this->m_sim.time().current_time());
+    tke.fillpatch(this->m_sim.time().current_time());
+    sdr.fillpatch(this->m_sim.time().current_time());
         
     auto gradK = (this->m_sim.repo()).create_scratch_field(3,0);
-    fvm::gradient(*gradK, m_tke->state(fstate) );
+    fvm::gradient(*gradK, tke );
 
     auto gradOmega = (this->m_sim.repo()).create_scratch_field(3,0);
-    fvm::gradient(*gradOmega, m_sdr->state(fstate) );
+    fvm::gradient(*gradOmega, sdr );
     
     auto& vel = this->m_vel.state(fstate);
     // Compute strain rate into shear production term
@@ -116,8 +118,8 @@ void KOmegaSST<Transport>::update_turbulent_viscosity(
             const auto& rho_arr = den(lev).const_array(mfi);
             const auto& gradK_arr = (*gradK)(lev).array(mfi);
             const auto& gradOmega_arr = (*gradOmega)(lev).array(mfi);
-            const auto& tke_arr = (*this->m_tke)(lev).array(mfi);
-            const auto& sdr_arr = (*this->m_sdr)(lev).array(mfi);
+            const auto& tke_arr = tke(lev).array(mfi);
+            const auto& sdr_arr = sdr(lev).array(mfi);
             const auto& wd_arr = (this->m_walldist)(lev).array(mfi);            
             const auto& shear_prod_arr = (this->m_shear_prod)(lev).array(mfi);
             const auto& diss_arr = (this->m_diss)(lev).array(mfi);
@@ -150,6 +152,13 @@ void KOmegaSST<Transport>::update_turbulent_viscosity(
                   
                   mu_arr(i, j, k) = rho_arr(i,j,k) * a1 * tke_arr(i,j,k) /
                       std::max(a1 * sdr_arr(i,j,k), tmp4 * f2);
+
+                  if (mu_arr(i,j,k) > 1.0)
+                           std::cerr << "mu_turb = " << mu_arr(i,j,k) << ", shear_prod = " << tmp4
+                                     << ", tke = " << tke_arr(i,j,k) << ", omega = " << sdr_arr(i,j,k) << std::endl;
+                      
+                  
+                  // mu_arr(i,j,k) = 1000.0* lam_mu;
                   // if ( mu_arr(i,j,k) < 1e-6)
                   //     std::cerr << "mu_turb = " << mu_arr(i,j,k) << ", shear_prod = " << tmp4
                   //           << ", tke = " << tke_arr(i,j,k) << ", omega = " << sdr_arr(i,j,k) << std::endl;
@@ -173,6 +182,9 @@ void KOmegaSST<Transport>::update_turbulent_viscosity(
     }
 
     mu_turb.fillpatch(this->m_sim.time().current_time());
+
+    amrex::Print() << "Min mu turb = " << mu_turb(0).min(0) << std::endl;
+    amrex::Print() << "Max mu turb = " << mu_turb(0).max(0) << std::endl;
     
 }
 
