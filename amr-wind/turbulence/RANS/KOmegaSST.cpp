@@ -46,16 +46,7 @@ void KOmegaSST<Transport>::update_turbulent_viscosity(
         8. Calculate TKE dissipation term 
         9. Calculate SDR source terms - Needs alpha, beta, F1, gradK, gradOmega
         */
-    
-    auto gradK = (this->m_sim.repo()).create_scratch_field(3,0);
-    fvm::gradient(*gradK, m_tke->state(fstate) );
 
-    auto gradOmega = (this->m_sim.repo()).create_scratch_field(3,0);
-    fvm::gradient(*gradOmega, m_sdr->state(fstate) );
-    
-    auto& vel = this->m_vel.state(fstate);
-    // Compute strain rate into shear production term
-    fvm::strainrate(this->m_shear_prod, vel);
     
     auto& mu_turb = this->mu_turb();
     const amrex::Real lam_mu = (this->m_transport).viscosity();
@@ -71,6 +62,52 @@ void KOmegaSST<Transport>::update_turbulent_viscosity(
     auto& repo = mu_turb.repo();
 
     const int nlevels = repo.num_active_levels();
+
+
+    // Clip and set values of tke and sdr that are out of bounds
+    for (int lev=0; lev < nlevels; ++lev) {
+
+        for (amrex::MFIter mfi(mu_turb(lev)); mfi.isValid(); ++mfi) {
+            const auto& bx = mfi.tilebox();
+            const auto& tke_arr = (*this->m_tke)(lev).array(mfi);
+            const auto& sdr_arr = (*this->m_sdr)(lev).array(mfi);
+            const auto& rho_arr = den(lev).const_array(mfi);
+            
+            amrex::ParallelFor(
+                bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+
+                  const amrex::Real tke = tke_arr(i,j,k);
+                  const amrex::Real sdr = sdr_arr(i,j,k);
+                        
+                  if ( (tke < 0.0) && (sdr < 0.0) ) {
+                      tke_arr(i,j,k) = 1e-8;
+                      sdr_arr(i,j,k) = rho_arr(i,j,k) * 1e-8 / (1000.0*lam_mu);
+                  } else if ( (tke < 0.0) ) {
+                      tke_arr(i,j,k) = 1000.0 * lam_mu * sdr / rho_arr(i,j,k);
+                  } else if ( (sdr < 0.0) ){
+                      sdr_arr(i,j,k) = rho_arr(i,j,k) * tke / (1000.0*lam_mu);
+                  }
+            });
+                
+            
+            
+        }
+    }
+
+    (this->m_tke)->fillpatch(this->m_sim.time().current_time());
+    (this->m_sdr)->fillpatch(this->m_sim.time().current_time());
+        
+    auto gradK = (this->m_sim.repo()).create_scratch_field(3,0);
+    fvm::gradient(*gradK, m_tke->state(fstate) );
+
+    auto gradOmega = (this->m_sim.repo()).create_scratch_field(3,0);
+    fvm::gradient(*gradOmega, m_sdr->state(fstate) );
+    
+    auto& vel = this->m_vel.state(fstate);
+    // Compute strain rate into shear production term
+    fvm::strainrate(this->m_shear_prod, vel);
+    
+    
     for (int lev=0; lev < nlevels; ++lev) {
 
         for (amrex::MFIter mfi(mu_turb(lev)); mfi.isValid(); ++mfi) {
@@ -96,36 +133,41 @@ void KOmegaSST<Transport>::update_turbulent_viscosity(
                         + gradK_arr(i,j,k,2) * gradOmega_arr(i,j,k,2));
                   
 
-                  amrex::Real cdkomega = std::max(1e-10,2.0 * rho_arr(i,j,k) * sigma_omega2 * gko / std::max(sdr_arr(i,j,k),1e-15) );
-                  amrex::Real tmp1 = 4.0 * rho_arr(i,j,k) * sigma_omega2 * tke_arr(i,j,k) / (cdkomega * wd_arr(i,j,k));
+                  amrex::Real cdkomega = std::max(1e-10,2.0 * rho_arr(i,j,k) * sigma_omega2 * gko / (sdr_arr(i,j,k) + 1e-15) );
+                  amrex::Real tmp1 = 4.0 * rho_arr(i,j,k) * sigma_omega2 * tke_arr(i,j,k) / (cdkomega * wd_arr(i,j,k) * wd_arr(i,j,k));
                   amrex::Real tmp2 = std::sqrt(tke_arr(i,j,k))/(beta_star * sdr_arr(i,j,k)*wd_arr(i,j,k) + 1e-15);
                   amrex::Real tmp3 = 500.0*lam_mu/(wd_arr(i,j,k)*wd_arr(i,j,k)*sdr_arr(i,j,k)*rho_arr(i,j,k) + 1e-15);
                   amrex::Real tmp4 = shear_prod_arr(i,j,k);
 
-                  amrex::Real tmp_f1 = std::tanh(std::min( std::max(tmp2,tmp3), tmp1));
+                  amrex::Real arg1 = std::min( std::max(tmp2,tmp3), tmp1);
+                  amrex::Real tmp_f1 = std::tanh(arg1 * arg1 * arg1 * arg1);
 
                   amrex::Real alpha = tmp_f1 * (alpha1 - alpha2) + alpha2;
                   amrex::Real beta = tmp_f1 * (beta1 - beta2) + beta2;
-
-                  amrex::Real f2 = std::tanh(std::pow(std::max(2.0 * tmp2, tmp3),2));
+                  
+                  amrex::Real arg2 = std::max(2.0 * tmp2, tmp3);
+                  amrex::Real f2 = std::tanh(arg2 * arg2);
+                  
                   mu_arr(i, j, k) = rho_arr(i,j,k) * a1 * tke_arr(i,j,k) /
                       std::max(a1 * sdr_arr(i,j,k), tmp4 * f2);
-                  if ( mu_arr(i,j,k) < 1e-6)
-                      std::cerr << "mu_turb = " << mu_arr(i,j,k) << ", shear_prod = " << tmp4
-                                << ", tke = " << tke_arr(i,j,k) << ", omega = " << sdr_arr(i,j,k) << std::endl;
+                  // if ( mu_arr(i,j,k) < 1e-6)
+                  //     std::cerr << "mu_turb = " << mu_arr(i,j,k) << ", shear_prod = " << tmp4
+                  //           << ", tke = " << tke_arr(i,j,k) << ", omega = " << sdr_arr(i,j,k) << std::endl;
 
                   f1_arr(i,j,k) = tmp_f1;
                   
                   diss_arr(i,j,k) = - beta_star * rho_arr(i,j,k) * tke_arr(i,j,k) * sdr_arr(i,j,k);
 
+                  shear_prod_arr(i,j,k)= mu_arr(i,j,k) * tmp4 * tmp4 ;
+                  //shear_prod_arr(i,j,k) = std::min(mu_arr(i,j,k) * tmp4 * tmp4,
+                  //10.0 * beta_star * rho_arr(i,j,k)
+                  //                                 * tke_arr(i,j,k) * sdr_arr(i,j,k));
+
                   sdr_src_arr(i,j,k) = rho_arr(i,j,k)
-                      * (alpha * tmp4 * tmp4
+                      * (alpha * shear_prod_arr(i,j,k)/mu_arr(i,j,k)
                          - beta * sdr_arr(i,j,k) * sdr_arr(i,j,k)
                          + 2.0 * (1-tmp_f1) * sigma_omega2 * gko / (sdr_arr(i,j,k) + 1e-15) );
-
-                  shear_prod_arr(i,j,k) = std::max(mu_arr(i,j,k) * tmp4 * tmp4,
-                                                   10.0 * beta_star * rho_arr(i,j,k)
-                                                   * tke_arr(i,j,k) * sdr_arr(i,j,k));
+                  
             });
         }
     }
