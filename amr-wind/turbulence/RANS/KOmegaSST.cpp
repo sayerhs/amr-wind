@@ -133,6 +133,8 @@ void KOmegaSST<Transport>::update_turbulent_viscosity(
             const auto& diss_arr = (this->m_diss)(lev).array(mfi);
             const auto& sdr_src_arr = (this->m_sdr_src)(lev).array(mfi);
             const auto& f1_arr = (this->m_f1)(lev).array(mfi);
+            const auto& tke_lhs_arr = (this->m_tke_lhs)(lev).array(mfi);
+            const auto& sdr_lhs_arr = (this->m_sdr_lhs)(lev).array(mfi);
             
             amrex::ParallelFor(
                 bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -173,16 +175,19 @@ void KOmegaSST<Transport>::update_turbulent_viscosity(
 
                   f1_arr(i,j,k) = tmp_f1;
                   
-                  diss_arr(i,j,k) = - beta_star * rho_arr(i,j,k) * tke_arr(i,j,k) * sdr_arr(i,j,k);
+                  diss_arr(i,j,k) = 0.0;
+                  tke_lhs_arr(i,j,k) = beta_star * rho_arr(i,j,k) * sdr_arr(i,j,k);
 
                   shear_prod_arr(i,j,k) = std::min(mu_arr(i,j,k) * tmp4 * tmp4,
-                  10.0 * beta_star * rho_arr(i,j,k)
+                                                   10.0 * beta_star * rho_arr(i,j,k)
                                                    * tke_arr(i,j,k) * sdr_arr(i,j,k));
 
                   sdr_src_arr(i,j,k) = rho_arr(i,j,k)
-                      * (alpha * shear_prod_arr(i,j,k)/mu_arr(i,j,k)
-                         - beta * sdr_arr(i,j,k) * sdr_arr(i,j,k) )
-                         + (1-tmp_f1) * cdkomega  ;
+                      * alpha * shear_prod_arr(i,j,k)/mu_arr(i,j,k);
+
+                  sdr_lhs_arr(i,j,k) = rho_arr(i,j,k) *
+                      ( beta * sdr_arr(i,j,k)
+                        - (1-tmp_f1) * cdkomega / sdr_arr(i,j,k) ) ;
                   
             });
         }
