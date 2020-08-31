@@ -19,9 +19,7 @@ KOmegaSST<Transport>::KOmegaSST(CFDSim& sim)
       m_diss(sim.repo().declare_field("dissipation",1, 1, 1)),
       m_sdr_src(sim.repo().declare_field("omega_src",1,1,1)),
       m_rho(sim.repo().get_field("density")),
-      m_walldist(sim.repo().declare_field("wall_dist",1,1,1)),
-      m_tke_lhs(sim.repo().get_field("tke_lhs_src_term")),
-      m_sdr_lhs(sim.repo().get_field("sdr_lhs_src_term"))
+      m_walldist(sim.repo().declare_field("wall_dist",1,1,1))
 {
     auto& tke_eqn = sim.pde_manager().register_transport_pde(pde::TKE::pde_name());
     m_tke = &(tke_eqn.fields().field);

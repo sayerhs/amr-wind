@@ -118,6 +118,9 @@ void KOmegaSST<Transport>::update_turbulent_viscosity(
     auto& vel = this->m_vel.state(fstate);
     // Compute strain rate into shear production term
     fvm::strainrate(this->m_shear_prod, vel);
+
+    auto& tke_lhs = (this->m_sim).repo().get_field("tke_lhs_src_term");
+    auto& sdr_lhs = (this->m_sim).repo().get_field("sdr_lhs_src_term");
      
     for (int lev=0; lev < nlevels; ++lev) {
         for (amrex::MFIter mfi(mu_turb(lev)); mfi.isValid(); ++mfi) {
@@ -133,19 +136,20 @@ void KOmegaSST<Transport>::update_turbulent_viscosity(
             const auto& diss_arr = (this->m_diss)(lev).array(mfi);
             const auto& sdr_src_arr = (this->m_sdr_src)(lev).array(mfi);
             const auto& f1_arr = (this->m_f1)(lev).array(mfi);
-            const auto& tke_lhs_arr = (this->m_tke_lhs)(lev).array(mfi);
-            const auto& sdr_lhs_arr = (this->m_sdr_lhs)(lev).array(mfi);
+            const auto& tke_lhs_arr = tke_lhs(lev).array(mfi);
+            const auto& sdr_lhs_arr = sdr_lhs(lev).array(mfi);
             
             amrex::ParallelFor(
                 bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
 
                   amrex::Real gko =
-                      -(gradK_arr(i,j,k,0) * gradOmega_arr(i,j,k,0)
+                      (gradK_arr(i,j,k,0) * gradOmega_arr(i,j,k,0)
                         + gradK_arr(i,j,k,1) * gradOmega_arr(i,j,k,1)
                         + gradK_arr(i,j,k,2) * gradOmega_arr(i,j,k,2));
                   
 
-                  amrex::Real cdkomega = std::max(1e-10,2.0 * rho_arr(i,j,k) * sigma_omega2 * gko / (sdr_arr(i,j,k) + 1e-15) );
+                  amrex::Real cdkomega = std::max(1e-10, 2.0 * rho_arr(i,j,k) * sigma_omega2 * gko / (sdr_arr(i,j,k) + 1e-15) );
+                  
                   amrex::Real tmp1 = 4.0 * rho_arr(i,j,k) * sigma_omega2 * tke_arr(i,j,k) / (cdkomega * wd_arr(i,j,k) * wd_arr(i,j,k));
                   amrex::Real tmp2 = std::sqrt(tke_arr(i,j,k))/(beta_star * sdr_arr(i,j,k)*wd_arr(i,j,k) + 1e-15);
                   amrex::Real tmp3 = 500.0*lam_mu/(wd_arr(i,j,k)*wd_arr(i,j,k)*sdr_arr(i,j,k)*rho_arr(i,j,k) + 1e-15);
@@ -185,10 +189,21 @@ void KOmegaSST<Transport>::update_turbulent_viscosity(
                   sdr_src_arr(i,j,k) = rho_arr(i,j,k)
                       * alpha * shear_prod_arr(i,j,k)/mu_arr(i,j,k);
 
-                  sdr_lhs_arr(i,j,k) = rho_arr(i,j,k) *
-                      ( beta * sdr_arr(i,j,k)
-                        - (1-tmp_f1) * cdkomega / sdr_arr(i,j,k) ) ;
-                  
+                  // if (cdkomega > 1e-9)
+                  //     std::cerr << "i,j,k = " << i << " " << j << " " << k << " " << cdkomega << " " << (1-tmp_f1) << ",  " << (1.0-tmp_f1) * cdkomega / sdr_arr(i,j,k) << std::endl;
+
+                  if ((1.0-tmp_f1)*cdkomega  < 0.0) {
+                      sdr_lhs_arr(i,j,k) = rho_arr(i,j,k) * beta * sdr_arr(i,j,k)
+                            - (1-tmp_f1) * cdkomega / sdr_arr(i,j,k) ;
+                      sdr_src_arr(i,j,k) = rho_arr(i,j,k) * alpha
+                          * shear_prod_arr(i,j,k)/mu_arr(i,j,k);
+                  } else {
+                      sdr_lhs_arr(i,j,k) = rho_arr(i,j,k) * beta * sdr_arr(i,j,k);
+                      sdr_src_arr(i,j,k) = rho_arr(i,j,k)
+                          * alpha * shear_prod_arr(i,j,k)/mu_arr(i,j,k)
+                             + (1.0 - tmp_f1) * cdkomega;
+                  }
+
             });
         }
     }

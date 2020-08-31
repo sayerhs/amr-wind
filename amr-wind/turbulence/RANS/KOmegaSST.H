@@ -63,8 +63,6 @@ protected:
     Field& m_sdr_src;
     Field& m_rho;
     Field& m_walldist;
-    Field& m_tke_lhs;
-    Field& m_sdr_lhs;
     
     Field* m_tke;
     Field* m_sdr;
