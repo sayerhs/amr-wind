@@ -78,11 +78,13 @@ struct DiffusionOp<SDR, Scheme> : public DiffSolverIface<typename SDR::MLDiffOp>
 
         const int nlevels = repo.num_active_levels();
         auto& density = m_density.state(fstate);
-        field_ops::xpay(
-            m_lhs_src_term, 1.0, density, 0, 0, 1, m_lhs_src_term.num_grow());
+        auto lhs_total = repo.create_scratch_field(1, 1);
+        field_ops::lincomb(
+            *lhs_total, 1.0, m_lhs_src_term, 0, 1.0, density, 0, 0, 1,
+            density.num_grow());
 
         for (int lev = 0; lev < nlevels; ++lev) {
-            linop.setACoeffs(lev, m_lhs_src_term(lev));
+            linop.setACoeffs(lev, (*lhs_total)(lev));
         }
     }
 
