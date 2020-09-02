@@ -92,6 +92,7 @@ void ChannelFlow::initialize_fields(
                 wd(i,j,k) = h;
                 const amrex::Real hp = h/y_tau;
                 vel(i,j,k,0) = utau * (1./kappa * std::log(1 + kappa * hp) + 7.8 * ( 1.0 - std::exp(-hp/11.0) - (hp/11.0) * std::exp(-hp/3.0) ) );
+                //vel(i,j,k,0) = 22.0;
                 vel(i,j,k,1) = 0.0;
                 vel(i,j,k,2) = 0.0;
             });
@@ -102,11 +103,17 @@ void ChannelFlow::post_init_actions() { }
 
 void ChannelFlow::post_advance_work() {
 
+    
 
-    const amrex::Real lam_mu = 1.0e-5;
+    const amrex::Real lam_mu = 1.0e-3;
     auto& den = m_repo.get_field("density");
     auto& tke = m_repo.get_field("tke");
     auto& sdr = m_repo.get_field("sdr");
+
+    amrex::Print() << "Min tke = " << tke(0).min(0) << std::endl;
+    amrex::Print() << "Max tke = " << tke(0).max(0) << std::endl;
+    amrex::Print() << "Min sdr = " << sdr(0).min(0) << std::endl;
+    amrex::Print() << "Max sdr = " << sdr(0).max(0) << std::endl;
     
     const int nlevels = m_repo.num_active_levels();
 
@@ -125,30 +132,25 @@ void ChannelFlow::post_advance_work() {
                   const amrex::Real tke_old = tke_arr(i,j,k);
                   const amrex::Real sdr_old = sdr_arr(i,j,k);
                         
-                  if ( (tke_old < 1e-3) && (sdr_old < 10.0) ) {
-                      tke_arr(i,j,k) = 1e-3;
-                      sdr_arr(i,j,k) = rho_arr(i,j,k) * 1e-3 / (100.0*lam_mu);
-                  } else if ( (tke_old < 1e-3) ) {
-                      tke_arr(i,j,k) = 100.0 * lam_mu * sdr_old / rho_arr(i,j,k);
-                  } else if ( (sdr_old < 10.0) ){
-                      sdr_arr(i,j,k) = rho_arr(i,j,k) * tke_old / (100.0*lam_mu);
+                  if ( (tke_old < 0) && (sdr_old < 1.0) ) {
+                      tke_arr(i,j,k) = 1e-8;
+                      sdr_arr(i,j,k) = rho_arr(i,j,k) * 1e-8 / (1.0*lam_mu);
+                  } else if ( (tke_old < 0) ) {
+                      tke_arr(i,j,k) = 1.0 * lam_mu * sdr_old / rho_arr(i,j,k);
+                  } else if ( (sdr_old < 1.0) ){
+                      sdr_arr(i,j,k) = rho_arr(i,j,k) * tke_old / (1.0*lam_mu);
                   }
             });
         }
     }
 
-    amrex::Print() << "Min tke = " << tke(0).min(0) << std::endl;
-    amrex::Print() << "Max tke = " << tke(0).max(0) << std::endl;
-    amrex::Print() << "Min sdr = " << sdr(0).min(0) << std::endl;
-    amrex::Print() << "Max sdr = " << sdr(0).max(0) << std::endl;
+    amrex::Print() << "Min tke after clip = " << tke(0).min(0) << std::endl;
+    amrex::Print() << "Max tke after clip = " << tke(0).max(0) << std::endl;
+    amrex::Print() << "Min sdr after clip = " << sdr(0).min(0) << std::endl;
+    amrex::Print() << "Max sdr after clip = " << sdr(0).max(0) << std::endl;
     
     tke.fillpatch(m_time.current_time());
     sdr.fillpatch(m_time.current_time());
-
-    amrex::Print() << "Min tke after fillpatch = " << tke(0).min(0) << std::endl;
-    amrex::Print() << "Max tke after fillpatch= " << tke(0).max(0) << std::endl;
-    amrex::Print() << "Min sdr after fillpatch = " << sdr(0).min(0) << std::endl;
-    amrex::Print() << "Max sdr after fillpatch = " << sdr(0).max(0) << std::endl;
     
 }
 
