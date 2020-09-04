@@ -86,7 +86,7 @@ void advection_mac_project(FieldRepo& repo, const FieldState fstate, const bool 
         amr_wind::fvm::divergence((*div),repo.get_field("gp"));
         // fixme I think this should be positive dt, but maybe also try -dt?
         for(int lev=0;lev<repo.num_active_levels(); ++lev)
-            (*div)(lev).mult(dt);
+            (*div)(lev).mult(-dt);
     }
 
     // Perform MAC projection
@@ -104,7 +104,8 @@ void advection_mac_project(FieldRepo& repo, const FieldState fstate, const bool 
                                                                     */
 
     // get the bc types from pressure field
-    auto& bctype = repo.get_field("p").bc_type();
+    auto& pressure = repo.get_field("p");
+    auto& bctype = pressure.bc_type();
 
     macproj.setDomainBC(
         mac::get_projection_bc(
@@ -113,9 +114,13 @@ void advection_mac_project(FieldRepo& repo, const FieldState fstate, const bool 
             amrex::Orientation::high, bctype, repo.mesh().Geom()));
 
     if(has_overset){
+
         auto phif = repo.create_scratch_field(1, 1, amr_wind::FieldLoc::CELL);
-        amr_wind::field_ops::copy(*phif, repo.get_field("p"), 0, 0, 1, 1);
+        for(int lev=0;lev<repo.num_active_levels(); ++lev)
+            amrex::average_node_to_cellcenter((*phif)(lev), 0, pressure(lev), 0, 1);
+
         macproj.project(phif->vec_ptrs(), options.rel_tol, options.abs_tol);
+
     } else {
         macproj.project(options.rel_tol, options.abs_tol);
     }
