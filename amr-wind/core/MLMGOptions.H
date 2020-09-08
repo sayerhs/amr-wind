@@ -50,6 +50,8 @@ struct MLMGOptions
     int cg_verbose{0};
     int cg_max_iter{200};
 
+    bool set_semi_coarsening{false};
+
 private:
     void parse_options(const std::string& prefix)
     {
@@ -63,6 +65,7 @@ private:
         pp.query("mg_fmg_max_iter", fmg_max_iter);
         pp.query("mg_max_coarsening_level", max_coarsen_level);
         pp.query("mg_max_order", max_order);
+        pp.query("mg_set_semi_coarsening", set_semi_coarsening);
         pp.query("mg_rtol", rel_tol);
         pp.query("mg_atol", abs_tol);
         pp.query("bottom_solver_type", bottom_solver_type);

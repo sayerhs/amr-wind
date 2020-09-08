@@ -77,6 +77,7 @@ void advection_mac_project(FieldRepo& repo, const FieldState fstate, const bool 
     // constructor
     amrex::LPInfo lp_info;
     lp_info.setMaxCoarseningLevel(options.max_coarsen_level);
+    lp_info.setSemicoarsening(options.set_semi_coarsening);
 
     // Perform MAC projection
     amrex::MacProjector macproj(
