@@ -63,7 +63,7 @@ void advection_mac_project(FieldRepo& repo, const FieldState fstate, const bool 
         amrex::average_cellcenter_to_face(
             rho_face[lev], density(lev), geom[lev]);
         for (int idim = 0; idim < ICNS::ndim; ++idim) {
-            rho_face[lev][idim]->invert(1.0, 0);
+            rho_face[lev][idim]->invert(dt, 0);
         }
 
         rho_face_const.push_back(GetArrOfConstPtrs(rho_face[lev]));
@@ -80,28 +80,17 @@ void advection_mac_project(FieldRepo& repo, const FieldState fstate, const bool 
     amrex::LPInfo lp_info;
     lp_info.setMaxCoarseningLevel(options.max_coarsen_level);
 
-    auto div = repo.create_scratch_field(1, 0);
-    if(has_overset){
-        // fixme what should we do about density?
-        amr_wind::fvm::divergence((*div),repo.get_field("gp"));
-        // fixme I think this should be positive dt, but maybe also try -dt?
-        for(int lev=0;lev<repo.num_active_levels(); ++lev)
-            (*div)(lev).mult(-dt);
-    }
-
     // Perform MAC projection
     amrex::MacProjector macproj(
         mac_vec, amrex::MLMG::Location::FaceCenter,
         rho_face_const, amrex::MLMG::Location::FaceCenter,
         amrex::MLMG::Location::CellCenter,
         repo.mesh().Geom(0, repo.num_active_levels() - 1), lp_info,
-        (has_overset ? (*div).vec_const_ptrs()
-                     : amrex::Vector<const amrex::MultiFab*>()),
-                                amrex::MLMG::Location::CellCenter);
-    /* fixme turned off masking for now,
+        {},
+        amrex::MLMG::Location::CellCenter,
         (has_overset ? repo.get_int_field("mask_cell").vec_const_ptrs()
                      : amrex::Vector<const amrex::iMultiFab*>()));
-                                                                    */
+                                                                    
 
     // get the bc types from pressure field
     auto& pressure = repo.get_field("p");
