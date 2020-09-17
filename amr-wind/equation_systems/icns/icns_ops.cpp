@@ -63,7 +63,7 @@ void advection_mac_project(FieldRepo& repo, const FieldState fstate, const bool 
     bool use_deltap = false;
     pp.query("deltap",use_deltap);
 
-    amrex::Real factor = has_overset ? 0.5 * dt : 1.0;
+    amrex::Real factor = has_overset ? dt_factor * dt : 1.0;
 
     for (int lev = 0; lev < repo.num_active_levels(); ++lev) {
         rho_face[lev][0] = &(*rho_xf)(lev);
