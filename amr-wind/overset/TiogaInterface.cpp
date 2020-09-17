@@ -143,13 +143,10 @@ void TiogaInterface::update_solution()
     auto& vel = repo.get_field("velocity");
     auto& pres = repo.get_field("p");
 
-    field_ops::copy(vel, *m_qcell, 0, 0, vel.num_comp(), vel.num_grow());
-    field_ops::copy(pres, *m_qnode, 0, 0, pres.num_comp(), pres.num_grow());
+//    field_ops::copy(vel, *m_qcell, 0, 0, vel.num_comp(), vel.num_grow());
+//    field_ops::copy(pres, *m_qnode, 0, 0, pres.num_comp(), pres.num_grow());
 
-    vel.fillpatch(0.0);
-    pres.fillpatch(0.0);
-
-#if 0
+#if 1
     int nlevels = repo.num_active_levels();
     for (int lev=0; lev < nlevels; ++lev) {
         auto& vfab = vel(lev);
@@ -191,6 +188,9 @@ void TiogaInterface::update_solution()
         }
     }
 #endif
+
+    vel.fillpatch(0.0);
+    pres.fillpatch(0.0);
 }
 
 void TiogaInterface::amr_to_tioga_mesh()
