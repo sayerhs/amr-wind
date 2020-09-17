@@ -3,6 +3,7 @@
 #include "amr-wind/core/FieldRepo.H"
 #include "amr-wind/equation_systems/PDEBase.H"
 #include "amr-wind/core/field_ops.H"
+#include "AMReX_ParmParse.H"
 
 namespace amr_wind {
 
@@ -105,8 +106,35 @@ void TiogaInterface::register_solution()
     m_qnode = repo.create_scratch_field(
         pres.num_comp(), pres.num_grow()[0], pres.field_location());
 
-    field_ops::copy(*m_qcell, vel, 0, 0, vel.num_comp(), vel.num_grow());
-    field_ops::copy(*m_qnode, pres, 0, 0, pres.num_comp(), pres.num_grow());
+    vel.state(amr_wind::FieldState::Old).fillpatch(0.0);
+    pres.state(amr_wind::FieldState::Old).fillpatch(0.0);
+    vel.fillpatch(0.0);
+    pres.fillpatch(0.0);
+
+    amrex::Real vc0 = 0.0;
+    amrex::Real vc1 = 1.0;
+    amrex::Real pc0 = 0.0;
+    amrex::Real pc1 = 1.0;
+
+    amrex::ParmParse pp("overset");
+
+    pp.query("vc0",vc0);
+    pp.query("vc1",vc1);
+    pp.query("pc0",pc0);
+    pp.query("pc1",pc1);
+
+    amr_wind::field_ops::lincomb(
+            *m_qcell,
+            vc0, vel.state(amr_wind::FieldState::Old), 0,
+            vc1, vel, 0, 0, vel.num_comp(), vel.num_grow()[0]);
+
+    amr_wind::field_ops::lincomb(
+            *m_qnode,
+            pc0, pres.state(amr_wind::FieldState::Old), 0,
+            pc1, pres, 0, 0, pres.num_comp(), pres.num_grow()[0]);
+
+    //field_ops::copy(*m_qcell, vel, 0, 0, vel.num_comp(), vel.num_grow());
+    //field_ops::copy(*m_qnode, pres, 0, 0, pres.num_comp(), pres.num_grow());
 }
 
 void TiogaInterface::update_solution()
@@ -117,6 +145,9 @@ void TiogaInterface::update_solution()
 
     field_ops::copy(vel, *m_qcell, 0, 0, vel.num_comp(), vel.num_grow());
     field_ops::copy(pres, *m_qnode, 0, 0, pres.num_comp(), pres.num_grow());
+
+    vel.fillpatch(0.0);
+    pres.fillpatch(0.0);
 
 #if 0
     int nlevels = repo.num_active_levels();

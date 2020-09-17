@@ -31,6 +31,8 @@ void incflo::pre_advance_stage1()
     auto& vel = icns().fields().field;
     vel.advance_states();
     vel.state(amr_wind::FieldState::Old).fillpatch(m_time.current_time());
+    pressure().advance_states();
+    pressure().state(amr_wind::FieldState::Old).fillpatch(m_time.current_time());
     for (auto& eqn: scalar_eqns()) {
         auto& field = eqn->fields().field;
         field.advance_states();

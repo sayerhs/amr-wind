@@ -5,6 +5,7 @@
 #include "amr-wind/utilities/console_io.H"
 #include "amr-wind/fvm/divergence.H"
 #include "amr-wind/core/field_ops.H"
+#include "AMReX_ParmParse.H"
 
 namespace amr_wind {
 namespace pde {
@@ -54,6 +55,13 @@ void advection_mac_project(FieldRepo& repo, const FieldState fstate, const bool 
     amrex::Vector<amrex::Array<amrex::MultiFab const*, ICNS::ndim>>
         rho_face_const;
     rho_face_const.reserve(repo.num_active_levels());
+
+
+    amrex::ParmParse pp("overset");
+    amrex::Real dt_factor = 0.5;
+    pp.query("dt_factor",dt_factor);
+    bool use_deltap = false;
+    pp.query("deltap",use_deltap);
 
     amrex::Real factor = has_overset ? 0.5 * dt : 1.0;
 
@@ -107,8 +115,20 @@ void advection_mac_project(FieldRepo& repo, const FieldState fstate, const bool 
     if(has_overset){
 
         auto phif = repo.create_scratch_field(1, 1, amr_wind::FieldLoc::CELL);
+
+        auto deltap = repo.create_scratch_field(1, 1, amr_wind::FieldLoc::NODE);
+        amr_wind::field_ops::lincomb(
+            *deltap,
+            -1.0, pressure.state(amr_wind::FieldState::Old), 0,
+            +1.0, pressure, 0, 0, pressure.num_comp(), 1);
+
         for(int lev=0;lev<repo.num_active_levels(); ++lev)
-            amrex::average_node_to_cellcenter((*phif)(lev), 0, pressure(lev), 0, 1);
+        {
+            if(use_deltap) 
+               amrex::average_node_to_cellcenter((*phif)(lev), 0, (*deltap)(lev), 0, 1);
+            else 
+               amrex::average_node_to_cellcenter((*phif)(lev), 0, pressure(lev), 0, 1);
+        }
 
         macproj.project(phif->vec_ptrs(), options.rel_tol, options.abs_tol);
 
