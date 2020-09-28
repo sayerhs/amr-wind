@@ -58,7 +58,9 @@ void LinearInflow::apply_bc(
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
     for (amrex::MFIter mfi(mfab, mfi_info); mfi.isValid(); ++mfi) {
-        const auto& bx = mfi.validbox();
+	const auto& bx1 = mfi.validbox();
+        int growdir = idim ? 0 : 1;
+        const auto& bx = amrex::grow(bx1,growdir,1);
         const auto& bc_a = mfab.array(mfi);
 
         if (islow && (bx.smallEnd(idim) == domain.smallEnd(idim))) {
