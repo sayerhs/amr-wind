@@ -106,45 +106,36 @@ void TiogaInterface::register_solution()
     m_qnode = repo.create_scratch_field(
         pres.num_comp(), pres.num_grow()[0], pres.field_location());
 
-    vel.state(amr_wind::FieldState::Old).fillpatch(0.0);
-    pres.state(amr_wind::FieldState::Old).fillpatch(0.0);
+    // fixme not sure if this is necessary
     vel.fillpatch(0.0);
     pres.fillpatch(0.0);
 
-    amrex::Real vc0 = 0.0;
-    amrex::Real vc1 = 1.0;
-    amrex::Real pc0 = 0.0;
-    amrex::Real pc1 = 1.0;
+    bool v_nph = false;
+    bool p_nph = false;
 
     amrex::ParmParse pp("overset");
 
-    pp.query("vc0",vc0);
-    pp.query("vc1",vc1);
-    pp.query("pc0",pc0);
-    pp.query("pc1",pc1);
+    pp.query("v_nph",v_nph);
+    pp.query("p_nph",p_nph);
 
-    amr_wind::field_ops::lincomb(
-            *m_qcell,
-            vc0, vel.state(amr_wind::FieldState::Old), 0,
-            vc1, vel, 0, 0, vel.num_comp(), vel.num_grow()[0]);
+    if(v_nph)
+       field_ops::copy(*m_qcell, vel.state(amr_wind::FieldState::NPH), 0, 0, vel.num_comp(), vel.num_grow());
+    else
+       field_ops::copy(*m_qcell, vel, 0, 0, vel.num_comp(), vel.num_grow());
 
-    amr_wind::field_ops::lincomb(
-            *m_qnode,
-            pc0, pres.state(amr_wind::FieldState::Old), 0,
-            pc1, pres, 0, 0, pres.num_comp(), pres.num_grow()[0]);
+    if(p_nph)
+       field_ops::copy(*m_qnode, pres.state(amr_wind::FieldState::NPH), 0, 0, pres.num_comp(), pres.num_grow());
+    else
+       field_ops::copy(*m_qnode, pres, 0, 0, pres.num_comp(), pres.num_grow());
 
-    //field_ops::copy(*m_qcell, vel, 0, 0, vel.num_comp(), vel.num_grow());
-    //field_ops::copy(*m_qnode, pres, 0, 0, pres.num_comp(), pres.num_grow());
+
 }
 
 void TiogaInterface::update_solution()
 {
     auto& repo = m_sim.repo();
-    auto& vel = repo.get_field("velocity");
+    auto& vel = repo.get_field("velocity").state(amr_wind::FieldState::Old);
     auto& pres = repo.get_field("p");
-
-//    field_ops::copy(vel, *m_qcell, 0, 0, vel.num_comp(), vel.num_grow());
-//    field_ops::copy(pres, *m_qnode, 0, 0, pres.num_comp(), pres.num_grow());
 
 #if 1
     int nlevels = repo.num_active_levels();

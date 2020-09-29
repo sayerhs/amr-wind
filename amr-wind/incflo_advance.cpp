@@ -31,8 +31,6 @@ void incflo::pre_advance_stage1()
     auto& vel = icns().fields().field;
     vel.advance_states();
     vel.state(amr_wind::FieldState::Old).fillpatch(m_time.current_time());
-    pressure().advance_states();
-    pressure().state(amr_wind::FieldState::Old).fillpatch(m_time.current_time());
     for (auto& eqn: scalar_eqns()) {
         auto& field = eqn->fields().field;
         field.advance_states();
@@ -269,6 +267,7 @@ void incflo::ApplyPredictor (bool incremental_projection)
     //                     R_u^n      , R_s^n       and R_t^n
     // *************************************************************************************
     icns().compute_advection_term(amr_wind::FieldState::Old);
+
     for (auto& seqn: scalar_eqns()) {
         seqn->compute_advection_term(amr_wind::FieldState::Old);
     }
@@ -341,6 +340,28 @@ void incflo::ApplyPredictor (bool incremental_projection)
     ApplyProjection(
         (density_nph).vec_const_ptrs(), new_time, m_time.deltaT(),
         incremental_projection);
+
+    // fixme this might be used for overset
+    amr_wind::field_ops::lincomb(
+            velocity_new.state(amr_wind::FieldState::NPH),
+            0.5, velocity_old, 0,
+            0.5, velocity_new, 0,
+            0, velocity_new.num_comp(), velocity_new.num_grow()[0]);
+
+    auto& pres = pressure();
+    // fixme this might be used for overset
+    // even though we are calling this nph it is really at time n
+    // that is because new is at n+1/2 and old is at n-1/2
+    amr_wind::field_ops::lincomb(
+            pres.state(amr_wind::FieldState::NPH),
+            0.5, pres.state(amr_wind::FieldState::Old), 0,
+            0.5, pres, 0, 0, pres.num_comp(), pres.num_grow()[0]);
+
+    // fixme this is for overset
+    // since we need old and new pressure to form a delta p in mac projection
+    pressure().advance_states();
+    pressure().state(amr_wind::FieldState::Old).fillpatch(m_time.current_time());
+
 }
 
 

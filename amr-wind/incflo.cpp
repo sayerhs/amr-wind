@@ -7,6 +7,7 @@
 #include "amr-wind/utilities/IOManager.H"
 #include "amr-wind/utilities/PostProcessing.H"
 #include "amr-wind/overset/OversetManager.H"
+#include "amr-wind/core/field_ops.H"
 
 using namespace amrex;
 
@@ -127,6 +128,15 @@ void incflo::prepare_for_time_integration()
         m_sim.io_manager().write_plot_file();
     if (m_time.write_checkpoint())
         m_sim.io_manager().write_checkpoint_file();
+
+    // need to fill in something for nph so that register solution works for first time step
+    auto& pres = pressure();
+    auto& vel = velocity();
+    amr_wind::field_ops::copy(pres.state(amr_wind::FieldState::Old), pres, 0, 0, pres.num_comp(), pres.num_grow());
+    amr_wind::field_ops::copy(pres.state(amr_wind::FieldState::NPH), pres, 0, 0, pres.num_comp(), pres.num_grow());
+    amr_wind::field_ops::copy(vel.state(amr_wind::FieldState::Old), vel, 0, 0, vel.num_comp(), vel.num_grow());
+    amr_wind::field_ops::copy(vel.state(amr_wind::FieldState::NPH), vel, 0, 0, vel.num_comp(), vel.num_grow());
+
 }
 
 /** Perform all initialization actions for AMR-Wind.
