@@ -179,9 +179,12 @@ void incflo::ApplyProjection (Vector<MultiFab const*> density,
     }
 
     amr_wind::MLMGOptions options("nodal_proj");
+    LPInfo lp_info;
+    lp_info.setMaxCoarseningLevel(options.max_coarsen_level);
     nodal_projector.reset(new NodalProjector(vel, GetVecOfConstPtrs(sigma),
-                                             Geom(0,finest_level), LPInfo()));
+                                             Geom(0,finest_level), lp_info));
     nodal_projector->setDomainBC(bclo, bchi);
+    nodal_projector->getLinOp().setCoarseningStrategy(amrex::MLNodeLinOp::CoarseningStrategy::RAP);
 
     // Setup masking for overset simulations
     if (sim().has_overset()) {
@@ -193,6 +196,8 @@ void incflo::ApplyProjection (Vector<MultiFab const*> density,
     }
 
     nodal_projector->setVerbose(options.verbose);
+    auto& np_mlmg = nodal_projector->getMLMG();
+    np_mlmg.setFixedIter(50);
     nodal_projector->project(options.rel_tol, options.abs_tol);
     amr_wind::io::print_mlmg_info("Nodal_projection", nodal_projector->getMLMG());
 
