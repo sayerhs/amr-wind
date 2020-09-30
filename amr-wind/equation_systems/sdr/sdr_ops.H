@@ -20,6 +20,7 @@ struct FieldRegOp<SDR, Scheme>
         repo.declare_cc_field(
             SDR::var_name() + "_lhs_src_term", SDR::ndim, 0, 1);
 
+        sim.io_manager().register_io_var(fields.field.name());
         return fields;
     }
 

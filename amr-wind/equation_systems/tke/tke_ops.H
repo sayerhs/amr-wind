@@ -20,6 +20,7 @@ struct FieldRegOp<TKE, Scheme>
         repo.declare_cc_field(
             TKE::var_name() + "_lhs_src_term", TKE::ndim, 0, 1);
 
+        sim.io_manager().register_io_var(fields.field.name());
         return fields;
     }
 
