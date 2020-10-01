@@ -112,7 +112,7 @@ void TiogaInterface::register_solution()
 void TiogaInterface::update_solution()
 {
     auto& repo = m_sim.repo();
-    auto& vel = repo.get_field("velocity");
+    auto& vel = repo.get_field("velocity").state(amr_wind::FieldState::Old);
     auto& pres = repo.get_field("p");
 
     field_ops::copy(vel, *m_qcell, 0, 0, vel.num_comp(), vel.num_grow());
@@ -160,6 +160,12 @@ void TiogaInterface::update_solution()
         }
     }
 #endif
+
+    // fixme this is only necessary because tioga does
+    // not fill in ghosts yet
+    vel.fillpatch(0.0);
+    pres.fillpatch(0.0);
+
 }
 
 void TiogaInterface::amr_to_tioga_mesh()
