@@ -105,6 +105,9 @@ void TiogaInterface::register_solution()
     m_qnode = repo.create_scratch_field(
         pres.num_comp(), pres.num_grow()[0], pres.field_location());
 
+    vel.fillpatch(0.0);
+    pres.fillpatch(0.0);
+
     field_ops::copy(*m_qcell, vel, 0, 0, vel.num_comp(), vel.num_grow());
     field_ops::copy(*m_qnode, pres, 0, 0, pres.num_comp(), pres.num_grow());
 }
