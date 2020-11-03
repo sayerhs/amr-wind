@@ -88,7 +88,7 @@ void DiffSolverIface<LinOp>::setup_solver(amrex::MLMG& mlmg)
 }
 
 template <typename LinOp>
-void DiffSolverIface<LinOp>::linsys_solve(const amrex::Real dt)
+void DiffSolverIface<LinOp>::linsys_solve_impl()
 {
     FieldState fstate = FieldState::New;
     auto& repo = this->m_pdefields.repo;
