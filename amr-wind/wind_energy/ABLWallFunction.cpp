@@ -293,6 +293,8 @@ void ABLVelWallFunc::operator()(Field& velocity, const FieldState rho_state)
     const amrex::Real umeany = mo.vel_mean[1];
     const amrex::Real wspd_mean = mo.vmag_mean;
 
+    int k1 = 0;
+    int k2 = 0;
     for (int lev = 0; lev < nlevels; ++lev) {
         const auto& geom = repo.mesh().Geom(lev);
         const auto& domain = geom.Domain();
@@ -302,6 +304,12 @@ void ABLVelWallFunc::operator()(Field& velocity, const FieldState rho_state)
         auto& vold_lev = velocity.state(FieldState::Old)(lev);
         auto& vel_lev = velocity(lev);
         auto& eta_lev = viscosity(lev);
+
+        if (lev > 0) {
+            const int rr = repo.mesh().refRatio(lev - 1)[2];
+            k2 = rr << (lev - 1);
+            k1 = k2 - 1;
+        }
 
         if (amrex::Gpu::notInLaunchRegion()) mfi_info.SetDynamic(true);
 #ifdef _OPENMP
@@ -321,8 +329,10 @@ void ABLVelWallFunc::operator()(Field& velocity, const FieldState rho_state)
                 [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
                     const amrex::Real mu =
                         c0 * eta(i, j, k) + c1 * eta(i, j, k + 1);
-                    const amrex::Real uu = vold_arr(i, j, k, 0);
-                    const amrex::Real vv = vold_arr(i, j, k, 1);
+                    const amrex::Real uu = 0.5 * (vold_arr(i, j, k + k1, 0) +
+                                                  vold_arr(i, j, k + k2, 0));
+                    const amrex::Real vv = 0.5 * (vold_arr(i, j, k + k1, 1) +
+                                                  vold_arr(i, j, k + k2, 1));
                     const amrex::Real wspd = std::sqrt(uu * uu + vv * vv);
 
                     // Dirichlet BC
@@ -378,6 +388,8 @@ void ABLTempWallFunc::operator()(Field& temperature, const FieldState rho_state)
     const amrex::Real theta_surf = mo.surf_temp;
     const amrex::Real term1 = (mo.utau * mo.kappa) / (wspd_mean * mo.phi_h());
 
+    int k1 = 0;
+    int k2 = 0;
     for (int lev = 0; lev < nlevels; ++lev) {
         const auto& geom = repo.mesh().Geom(lev);
         const auto& domain = geom.Domain();
@@ -388,6 +400,12 @@ void ABLTempWallFunc::operator()(Field& temperature, const FieldState rho_state)
         auto& told_lev = temperature.state(FieldState::Old)(lev);
         auto& theta = temperature(lev);
         auto& eta_lev = alpha(lev);
+
+        if (lev > 0) {
+            const int rr = repo.mesh().refRatio(lev - 1)[2];
+            k2 = rr << (lev - 1);
+            k1 = k2 - 1;
+        }
 
         if (amrex::Gpu::notInLaunchRegion()) mfi_info.SetDynamic(true);
 #ifdef _OPENMP
@@ -408,11 +426,14 @@ void ABLTempWallFunc::operator()(Field& temperature, const FieldState rho_state)
                 [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
                     const amrex::Real alphaT =
                         c0 * eta(i, j, k) + c1 * eta(i, j, k + 1);
-                    const amrex::Real uu = vold_arr(i, j, k, 0);
-                    const amrex::Real vv = vold_arr(i, j, k, 1);
+                    const amrex::Real uu = 0.5 * (vold_arr(i, j, k + k1, 0) +
+                                                  vold_arr(i, j, k + k2, 0));
+                    const amrex::Real vv = 0.5 * (vold_arr(i, j, k + k1, 1) +
+                                                  vold_arr(i, j, k + k2, 1));
                     const amrex::Real wspd = std::sqrt(uu * uu + vv * vv);
 
-                    const amrex::Real theta2 = told_arr(i, j, k);
+                    const amrex::Real theta2 =
+                        0.5 * (told_arr(i, j, k + k1) + told_arr(i, j, k + k2));
                     const amrex::Real num1 = (theta2 - theta_mean) * wspd_mean;
                     const amrex::Real num2 = (theta_mean - theta_surf) * wspd;
                     const amrex::Real tauT = term1 * (num1 + num2);
