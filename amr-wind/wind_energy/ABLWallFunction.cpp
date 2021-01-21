@@ -306,8 +306,7 @@ void ABLVelWallFunc::operator()(Field& velocity, const FieldState rho_state)
         auto& eta_lev = viscosity(lev);
 
         if (lev > 0) {
-            const int rr = repo.mesh().refRatio(lev - 1)[2];
-            k2 = rr << (lev - 1);
+            k2 = 1 << (lev - 1);
             k1 = k2 - 1;
         }
 
@@ -402,8 +401,7 @@ void ABLTempWallFunc::operator()(Field& temperature, const FieldState rho_state)
         auto& eta_lev = alpha(lev);
 
         if (lev > 0) {
-            const int rr = repo.mesh().refRatio(lev - 1)[2];
-            k2 = rr << (lev - 1);
+            k2 = 1 << (lev - 1);
             k1 = k2 - 1;
         }
 
