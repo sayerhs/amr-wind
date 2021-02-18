@@ -1,0 +1,12 @@
+<map id="amr_wind::pde::DiffusionOp&lt; SDR, Scheme &gt;" name="amr_wind::pde::DiffusionOp&lt; SDR, Scheme &gt;">
+<area shape="rect" id="node2" href="$classamr__wind_1_1pde_1_1_diff_solver_iface.html" title="amr_wind::pde::DiffSolver\lIface\&lt; SDR::MLDiffOp \&gt;" alt="" coords="2269,277,2460,318"/>
+<area shape="rect" id="node3" href="$classamr__wind_1_1_field.html" title="Computational fieldThis is an abstraction of a collection of MultiFabs over multiple levels..." alt="" coords="1185,360,1309,387"/>
+<area shape="rect" id="node14" href="$structamr__wind_1_1pde_1_1_p_d_e_fields.html" title="Collection of fields related to a PDEEvery PDE requires a common set of fields, e.g., the transported variable (scalar or vector), advection, diffusion, source, and effective viscosity fields. " alt="" coords="1503,305,1692,332"/>
+<area shape="rect" id="node15" href="$classamr__wind_1_1pde_1_1_diff_solver_iface.html" title="Base class for all diffusion operatorsThis class provides the common operations for an implicit solut..." alt="" coords="1901,229,2092,270"/>
+<area shape="rect" id="node4" title="STL class. " alt="" coords="290,280,377,307"/>
+<area shape="rect" id="node11" href="$structamr__wind_1_1_m_l_m_g_options.html" title="Interface to control the behavior of AMReX LinearSolvers. " alt="" coords="1506,184,1689,211"/>
+<area shape="rect" id="node5" title="STL class. " alt="" coords="5,273,144,314"/>
+<area shape="rect" id="node6" href="$classamr__wind_1_1_field_repo.html" title="Field RepositoryFieldRepo is a database that manages handling of fields used during a simulation..." alt="" coords="911,273,1067,300"/>
+<area shape="rect" id="node8" title="STL class. " alt="" coords="257,207,409,249"/>
+<area shape="rect" id="node13" title="STL class. " alt="" coords="1168,119,1325,145"/>
+</map>

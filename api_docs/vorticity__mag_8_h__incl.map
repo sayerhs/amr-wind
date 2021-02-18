@@ -1,0 +1,12 @@
+<map id="vorticity_mag.H" name="vorticity_mag.H">
+<area shape="rect" id="node2" href="$fvm__utils_8_h.html" title="amr&#45;wind/fvm/fvm_utils.H" alt="" coords="2445,80,2637,107"/>
+<area shape="rect" id="node3" href="$_field_repo_8_h.html" title="amr&#45;wind/core/FieldRepo.H" alt="" coords="1466,155,1661,181"/>
+<area shape="rect" id="node23" href="$stencils_8_h.html" title="Second&#45;order finite volume discretization stencil coefficients. " alt="" coords="2450,155,2631,181"/>
+<area shape="rect" id="node6" href="$_field_desc_types_8_h.html" title="amr&#45;wind/core/FieldDescTypes.H" alt="" coords="719,379,951,405"/>
+<area shape="rect" id="node7" href="$_field_utils_8_h.html" title="amr&#45;wind/core/FieldUtils.H" alt="" coords="5,304,199,331"/>
+<area shape="rect" id="node10" href="$_field_8_h.html" title="amr&#45;wind/core/Field.H" alt="" coords="1237,229,1399,256"/>
+<area shape="rect" id="node18" href="$_int_field_8_h.html" title="amr&#45;wind/core/IntField.H" alt="" coords="2008,229,2188,256"/>
+<area shape="rect" id="node20" href="$_scratch_field_8_h.html" title="amr&#45;wind/core/ScratchField.H" alt="" coords="529,229,739,256"/>
+<area shape="rect" id="node15" href="$incflo__enums_8_h.html" title="amr&#45;wind/incflo_enums.H" alt="" coords="1546,304,1733,331"/>
+<area shape="rect" id="node16" href="$_view_field_8_h.html" title="amr&#45;wind/core/ViewField.H" alt="" coords="671,304,866,331"/>
+</map>

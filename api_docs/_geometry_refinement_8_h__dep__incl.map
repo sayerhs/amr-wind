@@ -1,0 +1,7 @@
+<map id="GeometryRefinement.H" name="GeometryRefinement.H">
+<area shape="rect" id="node2" href="$_box_refiner_8_h.html" title="BoxRefiner.H" alt="" coords="19,80,124,107"/>
+<area shape="rect" id="node4" href="$_cylinder_refiner_8_h.html" title="CylinderRefiner.H" alt="" coords="151,80,285,107"/>
+<area shape="rect" id="node6" href="$_geometry_refinement_8cpp.html" title="GeometryRefinement.cpp" alt="" coords="309,80,497,107"/>
+<area shape="rect" id="node3" href="$_box_refiner_8cpp.html" title="BoxRefiner.cpp" alt="" coords="5,155,124,181"/>
+<area shape="rect" id="node5" href="$_cylinder_refiner_8cpp.html" title="CylinderRefiner.cpp" alt="" coords="149,155,295,181"/>
+</map>

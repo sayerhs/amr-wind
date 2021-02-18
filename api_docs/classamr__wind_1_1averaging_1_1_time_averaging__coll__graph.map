@@ -1,0 +1,30 @@
+<map id="amr_wind::averaging::TimeAveraging" name="amr_wind::averaging::TimeAveraging">
+<area shape="rect" id="node3" href="$classamr__wind_1_1_c_f_d_sim.html" title="Data structures for a CFD simulationCFDSim represents the amr&#45;wind execution environment and manages ..." alt="" coords="2585,679,2731,705"/>
+<area shape="rect" id="node5" href="$classamr__wind_1_1_i_o_manager.html" title="Input/Output managerThis class contains infrastructure to output solution fields during the simulatio..." alt="" coords="2940,139,3104,165"/>
+<area shape="rect" id="node20" href="$classamr__wind_1_1_post_process_manager.html" title="A collection of post&#45;processing instances that are active during a simulation. " alt="" coords="2908,789,3136,816"/>
+<area shape="rect" id="node21" href="$classamr__wind_1_1pde_1_1_p_d_e_mgr.html" title="PDE systems manager. " alt="" coords="2934,561,3110,588"/>
+<area shape="rect" id="node7" href="$classamr__wind_1_1_derived_qty_mgr.html" title="amr_wind::DerivedQtyMgr" alt="" coords="1691,353,1883,380"/>
+<area shape="rect" id="node22" href="$classamr__wind_1_1_coll_mgr.html" title="amr_wind::CollMgr\&lt;\l PDEMgr, PDEBase \&gt;" alt="" coords="1359,746,1516,787"/>
+<area shape="rect" id="node23" href="$classamr__wind_1_1_coll_mgr.html" title="Interface to manage objects of sub&#45;classes based on factory registrationProvides boiler&#45;plate code to..." alt="" coords="897,749,1069,805"/>
+<area shape="rect" id="node37" href="$classamr__wind_1_1_coll_mgr.html" title="amr_wind::CollMgr\&lt;\l ExtSolverMgr, ExtSolver \&gt;" alt="" coords="1339,886,1536,927"/>
+<area shape="rect" id="node39" href="$classamr__wind_1_1_coll_mgr.html" title="amr_wind::CollMgr\&lt;\l PhysicsMgr, Physics \&gt;" alt="" coords="1352,811,1523,853"/>
+<area shape="rect" id="node9" title="STL class. " alt="" coords="290,252,377,279"/>
+<area shape="rect" id="node10" title="STL class. " alt="" coords="5,245,144,286"/>
+<area shape="rect" id="node11" title="STL class. " alt="" coords="257,421,409,462"/>
+<area shape="rect" id="node18" title="STL class. " alt="" coords="279,55,388,81"/>
+<area shape="rect" id="node43" title="STL class. " alt="" coords="266,113,401,140"/>
+<area shape="rect" id="node16" title="STL class. " alt="" coords="1709,885,1866,912"/>
+<area shape="rect" id="node14" href="$classamr__wind_1_1_field_repo.html" title="Field RepositoryFieldRepo is a database that manages handling of fields used during a simulation..." alt="" coords="1359,353,1515,380"/>
+<area shape="rect" id="node25" href="$classamr__wind_1_1pde_1_1_p_d_e_base.html" title="Abstract interface defining a PDE and its solution process withn AMR&#45;WindThe exact behavior is implem..." alt="" coords="1695,589,1879,616"/>
+<area shape="rect" id="node26" href="$structamr__wind_1_1_factory.html" title="amr_wind::Factory\&lt;\l PDEBase, CFDSim &amp;,\l const int \&gt;" alt="" coords="1357,535,1518,591"/>
+<area shape="rect" id="node27" href="$structamr__wind_1_1_factory.html" title="Runtime selection of options based on string keyword lookupFactory provides an automated way to regis..." alt="" coords="907,561,1059,602"/>
+<area shape="rect" id="node31" href="$structamr__wind_1_1_factory.html" title="amr_wind::Factory\&lt;\l OversetManager, CFDSim &amp;\&gt;" alt="" coords="1329,681,1546,722"/>
+<area shape="rect" id="node34" href="$structamr__wind_1_1_factory.html" title="amr_wind::Factory\&lt;\l TurbulenceModel, CFDSim &amp;\&gt;" alt="" coords="1328,615,1547,657"/>
+<area shape="rect" id="node42" href="$structamr__wind_1_1_factory.html" title="amr_wind::Factory\&lt;\l FieldTimeAverage, CFDSim\l &amp;, const std::string &amp;\&gt;" alt="" coords="1337,455,1538,511"/>
+<area shape="rect" id="node28" href="$classamr__wind_1_1_sim_time.html" title="Time manager for simulations. " alt="" coords="2181,627,2333,653"/>
+<area shape="rect" id="node30" href="$classamr__wind_1_1_overset_manager.html" title="Overset interface manager. " alt="" coords="1687,757,1888,784"/>
+<area shape="rect" id="node33" href="$classamr__wind_1_1turbulence_1_1_turbulence_model.html" title="Abstract representation of a turbulence modelThis class is an abstract representation of a turbulence..." alt="" coords="1706,641,1869,682"/>
+<area shape="rect" id="node36" href="$classamr__wind_1_1_ext_solver_mgr.html" title="amr_wind::ExtSolverMgr" alt="" coords="1697,987,1877,1013"/>
+<area shape="rect" id="node38" href="$classamr__wind_1_1_physics_mgr.html" title="A collection of Physics models instances that are active during a simulation. " alt="" coords="1935,632,2102,659"/>
+<area shape="rect" id="node41" href="$classamr__wind_1_1averaging_1_1_field_time_average.html" title="Abstract class for time&#45;averaging of CFD fields. " alt="" coords="1708,413,1867,454"/>
+</map>

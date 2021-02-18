@@ -1,0 +1,4 @@
+<map id="amr_wind::averaging::FieldTimeAverage" name="amr_wind::averaging::FieldTimeAverage">
+<area shape="rect" id="node2" href="$structamr__wind_1_1_factory.html" title="amr_wind::Factory\&lt;\l FieldTimeAverage, CFDSim\l &amp;, const std::string &amp;\&gt;" alt="" coords="5,139,207,195"/>
+<area shape="rect" id="node3" href="$structamr__wind_1_1_factory.html" title="Runtime selection of options based on string keyword lookupFactory provides an automated way to regis..." alt="" coords="30,5,182,47"/>
+</map>

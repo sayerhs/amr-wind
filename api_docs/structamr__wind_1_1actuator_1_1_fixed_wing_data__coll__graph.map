@@ -1,0 +1,7 @@
+<map id="amr_wind::actuator::FixedWingData" name="amr_wind::actuator::FixedWingData">
+<area shape="rect" id="node2" href="$structamr__wind_1_1actuator_1_1_wing_base_data.html" title="Base data representation of a fixed&#45;wing. " alt="" coords="501,5,649,47"/>
+<area shape="rect" id="node4" href="$classamr__wind_1_1actuator_1_1_airfoil_table.html" title="amr_wind::actuator\l::AirfoilTable" alt="" coords="119,11,267,52"/>
+<area shape="rect" id="node5" title="STL class. " alt="" coords="115,78,272,105"/>
+<area shape="rect" id="node7" title="STL class. " alt="" coords="531,137,618,163"/>
+<area shape="rect" id="node8" title="STL class. " alt="" coords="124,129,263,171"/>
+</map>

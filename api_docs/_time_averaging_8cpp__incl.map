@@ -1,0 +1,20 @@
+<map id="TimeAveraging.cpp" name="TimeAveraging.cpp">
+<area shape="rect" id="node2" href="$_time_averaging_8_h.html" title="amr&#45;wind/utilities\l/averaging/TimeAveraging.H" alt="" coords="303,169,509,211"/>
+<area shape="rect" id="node13" href="$_re_averaging_8_h.html" title="amr&#45;wind/utilities\l/averaging/ReAveraging.H" alt="" coords="889,80,1080,121"/>
+<area shape="rect" id="node14" href="$_c_f_d_sim_8_h.html" title="amr&#45;wind/CFDSim.H" alt="" coords="1262,87,1414,114"/>
+<area shape="rect" id="node3" href="$_factory_8_h.html" title="amr&#45;wind/core/Factory.H" alt="" coords="114,355,293,382"/>
+<area shape="rect" id="node9" href="$_post_processing_8_h.html" title="amr&#45;wind/utilities\l/PostProcessing.H" alt="" coords="205,259,343,300"/>
+<area shape="rect" id="node16" href="$_sim_time_8_h.html" title="amr&#45;wind/core/SimTime.H" alt="" coords="3539,177,3729,203"/>
+<area shape="rect" id="node20" href="$_field_repo_8_h.html" title="amr&#45;wind/core/FieldRepo.H" alt="" coords="2769,177,2963,203"/>
+<area shape="rect" id="node35" href="$_p_d_e_base_8_h.html" title="amr&#45;wind/equation_systems\l/PDEBase.H" alt="" coords="1235,259,1441,300"/>
+<area shape="rect" id="node39" href="$_physics_8_h.html" title="amr&#45;wind/core/Physics.H" alt="" coords="745,266,928,293"/>
+<area shape="rect" id="node21" href="$_field_desc_types_8_h.html" title="amr&#45;wind/core/FieldDescTypes.H" alt="" coords="2766,437,2998,464"/>
+<area shape="rect" id="node22" href="$_field_utils_8_h.html" title="amr&#45;wind/core/FieldUtils.H" alt="" coords="3243,355,3436,382"/>
+<area shape="rect" id="node25" href="$_field_8_h.html" title="amr&#45;wind/core/Field.H" alt="" coords="1791,266,1954,293"/>
+<area shape="rect" id="node31" href="$_int_field_8_h.html" title="amr&#45;wind/core/IntField.H" alt="" coords="2904,266,3084,293"/>
+<area shape="rect" id="node33" href="$_scratch_field_8_h.html" title="amr&#45;wind/core/ScratchField.H" alt="" coords="2430,266,2641,293"/>
+<area shape="rect" id="node29" href="$incflo__enums_8_h.html" title="amr&#45;wind/incflo_enums.H" alt="" coords="1285,355,1471,382"/>
+<area shape="rect" id="node30" href="$_view_field_8_h.html" title="amr&#45;wind/core/ViewField.H" alt="" coords="2202,355,2397,382"/>
+<area shape="rect" id="node36" href="$_coll_mgr_8_h.html" title="amr&#45;wind/core/CollMgr.H" alt="" coords="746,355,927,382"/>
+<area shape="rect" id="node37" href="$_p_d_e_fields_8_h.html" title="amr&#45;wind/equation_systems\l/PDEFields.H" alt="" coords="952,348,1159,389"/>
+</map>

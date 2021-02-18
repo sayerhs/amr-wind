@@ -1,0 +1,19 @@
+<map id="ThirdMomentAveraging.H" name="ThirdMomentAveraging.H">
+<area shape="rect" id="node3" href="$_direction_selector_8_h.html" title="amr&#45;wind/utilities\l/DirectionSelector.H" alt="" coords="487,169,637,211"/>
+<area shape="rect" id="node6" href="$_field_8_h.html" title="amr&#45;wind/core/Field.H" alt="" coords="1467,341,1630,367"/>
+<area shape="rect" id="node17" href="$_field_plane_averaging_8_h.html" title="amr&#45;wind/utilities\l/FieldPlaneAveraging.H" alt="" coords="982,80,1153,121"/>
+<area shape="rect" id="node13" href="$incflo__enums_8_h.html" title="amr&#45;wind/incflo_enums.H" alt="" coords="1062,430,1249,457"/>
+<area shape="rect" id="node14" href="$_field_desc_types_8_h.html" title="amr&#45;wind/core/FieldDescTypes.H" alt="" coords="2303,512,2535,539"/>
+<area shape="rect" id="node15" href="$_view_field_8_h.html" title="amr&#45;wind/core/ViewField.H" alt="" coords="1993,430,2187,457"/>
+<area shape="rect" id="node18" href="$_c_f_d_sim_8_h.html" title="amr&#45;wind/CFDSim.H" alt="" coords="991,177,1143,203"/>
+<area shape="rect" id="node19" href="$_sim_time_8_h.html" title="amr&#45;wind/core/SimTime.H" alt="" coords="584,259,775,285"/>
+<area shape="rect" id="node23" href="$_field_repo_8_h.html" title="amr&#45;wind/core/FieldRepo.H" alt="" coords="2203,259,2398,285"/>
+<area shape="rect" id="node30" href="$_p_d_e_base_8_h.html" title="amr&#45;wind/equation_systems\l/PDEBase.H" alt="" coords="745,333,952,375"/>
+<area shape="rect" id="node38" href="$_physics_8_h.html" title="amr&#45;wind/core/Physics.H" alt="" coords="976,341,1159,367"/>
+<area shape="rect" id="node24" href="$_field_utils_8_h.html" title="amr&#45;wind/core/FieldUtils.H" alt="" coords="2932,430,3125,457"/>
+<area shape="rect" id="node26" href="$_int_field_8_h.html" title="amr&#45;wind/core/IntField.H" alt="" coords="2583,341,2763,367"/>
+<area shape="rect" id="node28" href="$_scratch_field_8_h.html" title="amr&#45;wind/core/ScratchField.H" alt="" coords="2195,341,2406,367"/>
+<area shape="rect" id="node31" href="$_factory_8_h.html" title="amr&#45;wind/core/Factory.H" alt="" coords="238,430,417,457"/>
+<area shape="rect" id="node35" href="$_coll_mgr_8_h.html" title="amr&#45;wind/core/CollMgr.H" alt="" coords="441,430,622,457"/>
+<area shape="rect" id="node36" href="$_p_d_e_fields_8_h.html" title="amr&#45;wind/equation_systems\l/PDEFields.H" alt="" coords="5,423,212,464"/>
+</map>

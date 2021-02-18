@@ -1,0 +1,13 @@
+<map id="amr_wind::turbulence::TurbModel&lt; Transport &gt;" name="amr_wind::turbulence::TurbModel&lt; Transport &gt;">
+<area shape="rect" id="node5" href="$classamr__wind_1_1turbulence_1_1_laminar.html" title="Laminar modelImplementation of laminar flow model. " alt="" coords="1077,5,1251,47"/>
+<area shape="rect" id="node6" href="$classamr__wind_1_1turbulence_1_1_turb_model_base.html" title="Turbulence model aspects common to both LES and RANS modelsThis class implements more of the common m..." alt="" coords="1055,71,1273,112"/>
+<area shape="rect" id="node2" href="$classamr__wind_1_1turbulence_1_1_turbulence_model.html" title="Abstract representation of a turbulence modelThis class is an abstract representation of a turbulence..." alt="" coords="607,39,769,80"/>
+<area shape="rect" id="node3" href="$structamr__wind_1_1_factory.html" title="amr_wind::Factory\&lt;\l TurbulenceModel, CFDSim &amp;\&gt;" alt="" coords="339,39,557,80"/>
+<area shape="rect" id="node4" href="$structamr__wind_1_1_factory.html" title="Runtime selection of options based on string keyword lookupFactory provides an automated way to regis..." alt="" coords="5,39,157,80"/>
+<area shape="rect" id="node7" href="$classamr__wind_1_1turbulence_1_1_k_omega_s_s_t.html" title="K&#45;Omega&#45;SST RANS turbulence model. " alt="" coords="1326,5,1525,47"/>
+<area shape="rect" id="node9" href="$classamr__wind_1_1turbulence_1_1_one_eq_ksgs.html" title="Base class for 1&#45;Equation subgrid scale TKE turbulence model. " alt="" coords="1329,71,1522,112"/>
+<area shape="rect" id="node12" href="$classamr__wind_1_1turbulence_1_1_smagorinsky.html" title="Smagorinsky LES Model. " alt="" coords="1323,136,1528,177"/>
+<area shape="rect" id="node8" href="$classamr__wind_1_1turbulence_1_1_k_omega_s_s_t_i_d_d_e_s.html" title="K&#45;Omega&#45;SST&#45;IDDES Hybrid RANS/LES turbulence model. " alt="" coords="1577,5,1816,47"/>
+<area shape="rect" id="node10" href="$classamr__wind_1_1turbulence_1_1_one_eq_ksgs_m84.html" title="1&#45;equation subgrid scale TKE turbulence modelImplements the model described in Moeng 1984 paper ..." alt="" coords="1587,71,1807,112"/>
+<area shape="rect" id="node11" href="$classamr__wind_1_1turbulence_1_1_one_eq_ksgs_s94.html" title="1&#45;equation subgrid scale TKE turbulence modelImplements the model described in Sullivan 1994 paper ..." alt="" coords="1588,136,1805,177"/>
+</map>

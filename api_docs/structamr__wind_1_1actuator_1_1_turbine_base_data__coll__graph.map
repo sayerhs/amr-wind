@@ -1,0 +1,10 @@
+<map id="amr_wind::actuator::TurbineBaseData" name="amr_wind::actuator::TurbineBaseData">
+<area shape="rect" id="node3" href="$structamr__wind_1_1actuator_1_1_component_view.html" title="amr_wind::actuator\l::ComponentView" alt="" coords="965,153,1113,194"/>
+<area shape="rect" id="node4" href="$structamr__wind_1_1utils_1_1_slice.html" title="amr_wind::utils::Slice\l\&lt; amrex::Real \&gt;" alt="" coords="597,105,758,146"/>
+<area shape="rect" id="node5" href="$structamr__wind_1_1utils_1_1_slice.html" title="amr_wind::utils::Slice\&lt; T \&gt;" alt="" coords="161,124,359,151"/>
+<area shape="rect" id="node7" href="$structamr__wind_1_1utils_1_1_slice.html" title="amr_wind::utils::Slice\l\&lt; amr_wind::vs::Tensor \&gt;" alt="" coords="583,170,772,211"/>
+<area shape="rect" id="node9" href="$structamr__wind_1_1utils_1_1_slice.html" title="amr_wind::utils::Slice\l\&lt; amr_wind::vs::Vector \&gt;" alt="" coords="583,39,771,81"/>
+<area shape="rect" id="node8" href="$structamr__wind_1_1vs_1_1_tensor_t.html" title="Tensor in 3D vector space. " alt="" coords="157,199,363,225"/>
+<area shape="rect" id="node10" href="$structamr__wind_1_1vs_1_1_vector_t.html" title="Vector in 3D space. " alt="" coords="158,20,362,47"/>
+<area shape="rect" id="node11" title="STL class. " alt="" coords="408,251,537,277"/>
+</map>
