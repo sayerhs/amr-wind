@@ -127,6 +127,13 @@ public:
 
     bool is_initialized() const { return m_is_initialized; }
 
+    int max_inflow_level() const
+    {
+        return amrex::min(m_max_level, m_mesh.finestLevel());
+    }
+
+    int num_inflow_levels() const { return max_inflow_level() + 1; }
+
 private:
     const amr_wind::SimTime& m_time;
     const FieldRepo& m_repo;
@@ -175,6 +182,8 @@ private:
 
     //! IO mode
     io_mode m_io_mode{io_mode::undefined};
+
+    int m_max_level{0};
 
     //! Flag indicating if this capability is available
     bool m_is_initialized{false};

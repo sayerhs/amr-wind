@@ -200,6 +200,7 @@ ABLBoundaryPlane::ABLBoundaryPlane(CFDSim& sim)
     pp.query("bndry_output_start_time", m_out_start_time);
     pp.queryarr("bndry_var_names", m_var_names);
     pp.get("bndry_file", m_filename);
+    pp.query("max_inflow_level", m_max_level);
 
 #endif
 }
@@ -420,8 +421,8 @@ void ABLBoundaryPlane::read_header()
 
     // FIXME Do not support multi-level input mode yet.
     // this is due to interpolation issues at the coarse-fine interface
-    if (m_repo.num_active_levels() > 1) {
-        amrex::Abort("Not supporting multi-level input mode yet.");
+    if (num_inflow_levels() > 1) {
+        amrex::Abort("ABLBoundaryPlane does not support multi-level inflow read.");
     }
 
     amrex::Print() << "Reading input NetCDF file: " << m_filename << std::endl;
@@ -437,7 +438,7 @@ void ABLBoundaryPlane::read_header()
     // Sanity check the input file time
     AMREX_ALWAYS_ASSERT(m_in_times[0] <= m_time.current_time());
 
-    const int nlevels = m_repo.num_active_levels();
+    const int nlevels = num_inflow_levels();
     m_in_data.resize(6);
     for (auto& plane_grp : ncf.all_groups()) {
         int normal, face_dir;
@@ -510,7 +511,7 @@ void ABLBoundaryPlane::read_file()
             m_filename, NC_NOWRITE | NC_NETCDF4 | NC_MPIIO,
             amrex::ParallelContext::CommunicatorSub(), MPI_INFO_NULL);
 
-        const int nlevels = m_repo.num_active_levels();
+        const int nlevels = num_inflow_levels();
         for (amrex::OrientationIter oit; oit; ++oit) {
             auto ori = oit();
             if (not m_in_data.is_populated(ori)) continue;
@@ -536,8 +537,8 @@ void ABLBoundaryPlane::populate_data(
     amrex::MultiFab& mfab) const
 {
 #ifdef AMR_WIND_USE_NETCDF
-
     if (m_io_mode != io_mode::input) return;
+    if (lev > max_inflow_level()) return;
 
     AMREX_ALWAYS_ASSERT(
         ((m_in_data.tn() <= time) || (time <= m_in_data.tnp1())));
